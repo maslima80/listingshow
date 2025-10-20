@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1760696329096,
+      "tag": "0000_married_marten_broadcloak",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1760711480289,
+      "tag": "0001_magical_cassandra_nova",
+      "breakpoints": true
+    }
+  ]
+}
