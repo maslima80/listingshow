@@ -178,6 +178,50 @@ export function PropertyEditor({
     );
   };
 
+  // Drag and drop handlers
+  const [draggedItem, setDraggedItem] = useState<string | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, mediaId: string) => {
+    setDraggedItem(mediaId);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    
+    if (!draggedItem || draggedItem === targetId) {
+      setDraggedItem(null);
+      return;
+    }
+
+    setMediaFiles(prev => {
+      const videos = prev.filter(m => m.type === "video");
+      const photos = prev.filter(m => m.type === "photo");
+      
+      const draggedIndex = videos.findIndex(m => m.id === draggedItem);
+      const targetIndex = videos.findIndex(m => m.id === targetId);
+      
+      if (draggedIndex === -1 || targetIndex === -1) return prev;
+      
+      const reorderedVideos = [...videos];
+      const [removed] = reorderedVideos.splice(draggedIndex, 1);
+      reorderedVideos.splice(targetIndex, 0, removed);
+      
+      return [...reorderedVideos, ...photos];
+    });
+    
+    setDraggedItem(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedItem(null);
+  };
+
   const toggleAmenity = (amenity: string) => {
     setSelectedAmenities(prev =>
       prev.includes(amenity)
@@ -314,18 +358,29 @@ export function PropertyEditor({
           {/* Videos Section */}
           {mediaFiles.filter(m => m.type === "video").length > 0 && (
             <div className="space-y-3">
-              <div className="flex items-center gap-2 pb-2 border-b">
-                <Video className="w-5 h-5 text-primary" />
-                <h3 className="font-semibold text-lg">Videos</h3>
-                <Badge variant="secondary">{mediaFiles.filter(m => m.type === "video").length}</Badge>
+              <div className="flex items-center justify-between pb-2 border-b">
+                <div className="flex items-center gap-2">
+                  <Video className="w-5 h-5 text-primary" />
+                  <h3 className="font-semibold text-lg">Videos</h3>
+                  <Badge variant="secondary">{mediaFiles.filter(m => m.type === "video").length}</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">Drag to reorder</p>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {mediaFiles.filter(m => m.type === "video").map(media => (
-                  <div key={media.id} className="space-y-2">
+                  <div 
+                    key={media.id} 
+                    className="space-y-2"
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, media.id)}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, media.id)}
+                    onDragEnd={handleDragEnd}
+                  >
                     <div
-                      className={`relative aspect-video rounded-lg overflow-hidden border-2 ${
+                      className={`relative aspect-video rounded-lg overflow-hidden border-2 cursor-move ${
                         media.isHero ? "border-primary ring-2 ring-primary/20" : "border-border"
-                      }`}
+                      } ${draggedItem === media.id ? "opacity-50" : ""}`}
                     >
                       <video
                         src={media.preview}

@@ -175,48 +175,109 @@ export function PropertyPageClient({ property, media, agents, accentColor }: Pro
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Videos Section - Instagram Reels Style */}
+            {/* Videos Section - Netflix Style */}
             {videos.length > 0 && (
-              <div className="space-y-4">
-                <h2 className="text-2xl font-bold">Property Tour</h2>
-                <p className="text-muted-foreground text-sm">Tap any video to watch in fullscreen</p>
+              <div className="space-y-8">
+                <div>
+                  <h2 className="text-2xl font-bold mb-2">Property Tour</h2>
+                  <p className="text-muted-foreground text-sm">Swipe through highlights or browse all videos below</p>
+                </div>
                 
-                {/* Vertical Video Grid - Instagram Reels Style */}
-                <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                  {videos.map((video, index) => (
-                    <div
-                      key={video.id}
-                      onClick={() => openVideoViewer(index)}
-                      className="group relative aspect-[9/16] rounded-lg overflow-hidden cursor-pointer bg-black shadow-lg hover:shadow-2xl transition-all"
-                    >
-                      {/* Video Preview */}
-                      <video
-                        src={video.url}
-                        className="w-full h-full object-cover"
-                        muted
-                        playsInline
-                      />
-                      
-                      {/* Gradient Overlay - Pure Cinematic */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 group-hover:from-black/60 transition-all">
-                        {/* Video Title at Bottom */}
-                        {video.label && (
-                          <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3">
-                            <h3 className="text-white font-semibold text-xs sm:text-sm leading-tight line-clamp-2 drop-shadow-lg">
-                              {video.label}
-                            </h3>
+                {/* Horizontal Swipe Carousel - Instagram Stories Style */}
+                <div className="relative -mx-4 sm:mx-0">
+                  <div className="overflow-x-auto scrollbar-hide snap-x snap-mandatory">
+                    <div className="flex gap-3 px-4 sm:px-0 pb-4">
+                      {videos.map((video, index) => (
+                        <div
+                          key={video.id}
+                          onClick={() => openVideoViewer(index)}
+                          className="flex-none w-[45vw] sm:w-[200px] snap-center group cursor-pointer"
+                        >
+                          {/* Vertical Video Card */}
+                          <div className="relative aspect-[9/16] rounded-xl overflow-hidden bg-black shadow-xl hover:shadow-2xl transition-all">
+                            <video
+                              src={video.url}
+                              className="w-full h-full object-cover"
+                              muted
+                              playsInline
+                            />
+                            
+                            {/* Gradient Overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20 group-hover:from-black/50 transition-all" />
+                            
+                            {/* Duration Badge */}
+                            <div className="absolute top-3 right-3">
+                              <div className="bg-black/80 backdrop-blur-sm rounded px-2 py-1 text-white text-xs font-medium">
+                                0:45
+                              </div>
+                            </div>
+                            
+                            {/* Play Indicator on Hover */}
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                                <div className="w-0 h-0 border-l-[16px] border-l-white border-t-[10px] border-t-transparent border-b-[10px] border-b-transparent ml-1" />
+                              </div>
+                            </div>
+                            
+                            {/* Video Title Inside Card */}
+                            <div className="absolute bottom-0 left-0 right-0 p-3">
+                              <h3 className="text-white font-semibold text-sm leading-tight line-clamp-2 drop-shadow-lg">
+                                {video.label || `Video ${index + 1}`}
+                              </h3>
+                            </div>
                           </div>
-                        )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Swipe Indicator */}
+                  <div className="flex items-center justify-center gap-2 mt-2 text-muted-foreground text-sm sm:hidden">
+                    <span>←</span>
+                    <span>Swipe</span>
+                    <span>→</span>
+                  </div>
+                </div>
+                
+                {/* Full Video Tour - 3 Column Grid */}
+                <div className="space-y-4">
+                  <h3 className="text-xl font-bold">Full Video Tour</h3>
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                    {videos.map((video, index) => (
+                      <div
+                        key={video.id}
+                        onClick={() => openVideoViewer(index)}
+                        className="group relative aspect-[9/16] rounded-lg overflow-hidden cursor-pointer bg-black shadow-lg hover:shadow-2xl transition-all"
+                      >
+                        {/* Video Preview */}
+                        <video
+                          src={video.url}
+                          className="w-full h-full object-cover"
+                          muted
+                          playsInline
+                        />
                         
-                        {/* Video Number Badge */}
-                        <div className="absolute top-2 right-2">
-                          <div className="bg-black/60 backdrop-blur-sm rounded-full px-2 py-0.5 text-white text-xs font-medium">
-                            {index + 1}
+                        {/* Gradient Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 group-hover:from-black/60 transition-all">
+                          {/* Video Title at Bottom */}
+                          {video.label && (
+                            <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3">
+                              <h3 className="text-white font-semibold text-xs sm:text-sm leading-tight line-clamp-2 drop-shadow-lg">
+                                {video.label}
+                              </h3>
+                            </div>
+                          )}
+                          
+                          {/* Duration Badge */}
+                          <div className="absolute top-2 right-2">
+                            <div className="bg-black/60 backdrop-blur-sm rounded px-1.5 py-0.5 text-white text-xs font-medium">
+                              0:45
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
