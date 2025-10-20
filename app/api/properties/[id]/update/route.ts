@@ -4,12 +4,12 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { properties, mediaAssets, propertyAgents } from "@/lib/db/schema";
 import { authOptions } from "@/lib/auth";
-import { eq } from "drizzle-orm";
-import { writeFile } from "fs/promises";
+import { eq, and, notInArray } from "drizzle-orm";
+import { writeFile, unlink } from "fs/promises";
 import { join } from "path";
 import crypto from "crypto";
 
-const createPropertySchema = z.object({
+const updatePropertySchema = z.object({
   name: z.string().min(1, "Property name is required"),
   price: z.string().min(1, "Price is required"),
   location: z.string().min(1, "Location is required"),
@@ -21,9 +21,14 @@ const createPropertySchema = z.object({
   description: z.string().optional(),
   amenities: z.array(z.string()).default([]),
   agentIds: z.array(z.string()).default([]),
+  existingMediaIds: z.array(z.string()).default([]),
+  existingMediaTitles: z.array(z.object({ id: z.string(), title: z.string() })).default([]),
 });
 
-export async function POST(request: NextRequest) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -31,6 +36,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
+      );
+    }
+
+    // Verify property ownership
+    const [existingProperty] = await db
+      .select()
+      .from(properties)
+      .where(
+        and(
+          eq(properties.id, params.id),
+          eq(properties.teamId, session.user.teamId)
+        )
+      )
+      .limit(1);
+
+    if (!existingProperty) {
+      return NextResponse.json(
+        { error: "Property not found" },
+        { status: 404 }
       );
     }
 
@@ -49,26 +73,19 @@ export async function POST(request: NextRequest) {
       description: formData.get("description") as string,
       amenities: JSON.parse(formData.get("amenities") as string || "[]"),
       agentIds: JSON.parse(formData.get("agentIds") as string || "[]"),
+      existingMediaIds: JSON.parse(formData.get("existingMediaIds") as string || "[]"),
+      existingMediaTitles: JSON.parse(formData.get("existingMediaTitles") as string || "[]"),
     };
 
     // Validate
-    const validated = createPropertySchema.parse(propertyData);
+    const validated = updatePropertySchema.parse(propertyData);
 
-    // Generate slug from property name
-    const slug = validated.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "")
-      + "-" + crypto.randomBytes(4).toString("hex");
-
-    // Create property
-    const [property] = await db
-      .insert(properties)
-      .values({
-        teamId: session.user.teamId,
+    // Update property
+    await db
+      .update(properties)
+      .set({
         title: validated.name,
-        slug: slug,
-        price: validated.price.replace(/[^0-9.]/g, ''), // Remove non-numeric characters
+        price: validated.price.replace(/[^0-9.]/g, ''),
         location: validated.location,
         beds: validated.beds ? parseInt(validated.beds) : null,
         baths: validated.baths ? parseInt(validated.baths) : null,
@@ -76,16 +93,78 @@ export async function POST(request: NextRequest) {
         areaSqft: validated.sqft ? validated.sqft.replace(/[^0-9.]/g, '') : null,
         description: validated.description || null,
         amenities: validated.amenities.length > 0 ? validated.amenities : null,
-        status: "published",
-        publishedAt: new Date(),
+        updatedAt: new Date(),
       })
-      .returning();
+      .where(eq(properties.id, params.id));
 
-    // Process media files
+    // Update existing media titles
+    for (const mediaTitle of validated.existingMediaTitles) {
+      await db
+        .update(mediaAssets)
+        .set({ label: mediaTitle.title })
+        .where(eq(mediaAssets.id, mediaTitle.id));
+    }
+
+    // Handle media deletion - remove media not in existingMediaIds
+    if (validated.existingMediaIds.length > 0) {
+      const mediaToDelete = await db
+        .select()
+        .from(mediaAssets)
+        .where(
+          and(
+            eq(mediaAssets.propertyId, params.id),
+            notInArray(mediaAssets.id, validated.existingMediaIds)
+          )
+        );
+
+      // Delete files from disk
+      for (const media of mediaToDelete) {
+        try {
+          const filepath = join(process.cwd(), "public", media.url);
+          await unlink(filepath);
+        } catch (error) {
+          console.error(`Failed to delete file ${media.url}:`, error);
+        }
+      }
+
+      // Delete from database
+      if (mediaToDelete.length > 0) {
+        await db
+          .delete(mediaAssets)
+          .where(
+            and(
+              eq(mediaAssets.propertyId, params.id),
+              notInArray(mediaAssets.id, validated.existingMediaIds)
+            )
+          );
+      }
+    } else {
+      // If no existing media IDs, delete all existing media
+      const allMedia = await db
+        .select()
+        .from(mediaAssets)
+        .where(eq(mediaAssets.propertyId, params.id));
+
+      for (const media of allMedia) {
+        try {
+          const filepath = join(process.cwd(), "public", media.url);
+          await unlink(filepath);
+        } catch (error) {
+          console.error(`Failed to delete file ${media.url}:`, error);
+        }
+      }
+
+      await db
+        .delete(mediaAssets)
+        .where(eq(mediaAssets.propertyId, params.id));
+    }
+
+    // Process new media files
     const mediaFiles = formData.getAll("media") as File[];
     const heroMediaId = formData.get("heroMediaId") as string;
     
     const uploadedMedia = [];
+    const currentMediaCount = validated.existingMediaIds.length;
     
     for (let i = 0; i < mediaFiles.length; i++) {
       const file = mediaFiles[i];
@@ -107,11 +186,11 @@ export async function POST(request: NextRequest) {
       const [mediaAsset] = await db
         .insert(mediaAssets)
         .values({
-          propertyId: property.id,
+          propertyId: params.id,
           type: file.type.startsWith("video/") ? "video" : "photo",
           url: `/uploads/properties/${filename}`,
           label: mediaTitle || null,
-          position: i,
+          position: currentMediaCount + i,
         })
         .returning();
       
@@ -122,15 +201,29 @@ export async function POST(request: NextRequest) {
         await db
           .update(properties)
           .set({ coverAssetId: mediaAsset.id })
-          .where(eq(properties.id, property.id));
+          .where(eq(properties.id, params.id));
       }
     }
 
-    // Link agents to property
+    // If hero is an existing media, update cover
+    if (validated.existingMediaIds.includes(heroMediaId)) {
+      await db
+        .update(properties)
+        .set({ coverAssetId: heroMediaId })
+        .where(eq(properties.id, params.id));
+    }
+
+    // Update agent assignments
+    // Delete existing assignments
+    await db
+      .delete(propertyAgents)
+      .where(eq(propertyAgents.propertyId, params.id));
+
+    // Add new assignments
     if (validated.agentIds.length > 0) {
       await db.insert(propertyAgents).values(
         validated.agentIds.map((agentId, index) => ({
-          propertyId: property.id,
+          propertyId: params.id,
           agentProfileId: agentId,
           isPrimary: index === 0,
         }))
@@ -139,12 +232,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      property: {
-        id: property.id,
-        slug: property.slug,
-        url: `/p/${property.slug}`,
-      },
-      mediaCount: uploadedMedia.length,
+      message: "Property updated successfully",
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -155,9 +243,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.error("Property creation error:", error);
+    console.error("Property update error:", error);
     return NextResponse.json(
-      { error: "Failed to create property", details: error instanceof Error ? error.message : String(error) },
+      { error: "Failed to update property", details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }

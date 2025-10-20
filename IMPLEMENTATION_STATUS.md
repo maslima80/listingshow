@@ -13,7 +13,7 @@
 ## ✅ Completed Features
 
 ### 1. **Authentication & Onboarding**
-- ✅ NextAuth.js with Google OAuth
+- ✅ NextAuth.js 
 - ✅ Team creation during onboarding
 - ✅ Custom team slug (e.g., `listing.show/u/teamname`)
 - ✅ Session management

@@ -23,7 +23,8 @@ import {
   Sparkles,
   Check,
   Loader2,
-  X
+  X,
+  Save
 } from "lucide-react";
 
 interface Agent {
@@ -33,19 +34,44 @@ interface Agent {
   photoUrl: string;
 }
 
-interface PropertyCreatorProps {
+interface ExistingMedia {
+  id: string;
+  url: string;
+  type: "video" | "photo";
+  isHero: boolean;
+  title?: string;
+}
+
+interface PropertyEditorProps {
+  propertyId: string;
   teamId: string;
   userId: string;
+  initialData: {
+    name: string;
+    price: string;
+    location: string;
+    showFullAddress: boolean;
+    beds: string;
+    baths: string;
+    parking: string;
+    sqft: string;
+    description: string;
+    amenities: string[];
+    agentIds: string[];
+  };
+  existingMedia: ExistingMedia[];
   agents: Agent[];
 }
 
 interface MediaFile {
   id: string;
-  file: File;
+  file?: File;
+  url: string;
   preview: string;
-  type: "video" | "image";
+  type: "video" | "photo";
   isHero: boolean;
   title?: string;
+  isExisting: boolean;
 }
 
 const AMENITY_TAGS = [
@@ -71,25 +97,35 @@ const AMENITY_TAGS = [
   "Concierge",
 ];
 
-export function PropertyCreator({ teamId, userId, agents }: PropertyCreatorProps) {
+export function PropertyEditor({ 
+  propertyId,
+  teamId, 
+  userId, 
+  initialData,
+  existingMedia,
+  agents 
+}: PropertyEditorProps) {
   const router = useRouter();
-  const [isPublishing, setIsPublishing] = useState(false);
-  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
-  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
-  const [selectedAgents, setSelectedAgents] = useState<string[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+  
+  // Convert existing media to MediaFile format
+  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>(
+    existingMedia.map(m => ({
+      id: m.id,
+      url: m.url,
+      preview: m.url,
+      type: m.type,
+      isHero: m.isHero,
+      title: m.title,
+      isExisting: true,
+    }))
+  );
+  
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>(initialData.amenities);
+  const [selectedAgents, setSelectedAgents] = useState<string[]>(initialData.agentIds);
   const [customAmenity, setCustomAmenity] = useState("");
   
-  const [formData, setFormData] = useState({
-    name: "",
-    price: "",
-    location: "",
-    showFullAddress: true,
-    beds: "",
-    baths: "",
-    parking: "",
-    sqft: "",
-    description: "",
-  });
+  const [formData, setFormData] = useState(initialData);
 
   const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -102,9 +138,11 @@ export function PropertyCreator({ teamId, userId, agents }: PropertyCreatorProps
       const mediaFile: MediaFile = {
         id: Math.random().toString(36).substr(2, 9),
         file,
+        url: "",
         preview,
-        type: isVideo ? "video" : "image",
-        isHero: !hasExistingHero && index === 0, // Only first file is hero if no hero exists
+        type: isVideo ? "video" : "photo",
+        isHero: !hasExistingHero && index === 0,
+        isExisting: false,
       };
       
       return mediaFile;
@@ -125,7 +163,6 @@ export function PropertyCreator({ teamId, userId, agents }: PropertyCreatorProps
   const removeMedia = (id: string) => {
     setMediaFiles(prev => {
       const filtered = prev.filter(m => m.id !== id);
-      // If we removed the hero, make the first one hero
       if (filtered.length > 0 && !filtered.some(m => m.isHero)) {
         filtered[0].isHero = true;
       }
@@ -164,16 +201,15 @@ export function PropertyCreator({ teamId, userId, agents }: PropertyCreatorProps
     );
   };
 
-  const handlePublish = async () => {
+  const handleSave = async () => {
     if (!formData.name || !formData.price || mediaFiles.length === 0) {
       alert("Please add property name, price, and at least one photo/video");
       return;
     }
 
-    setIsPublishing(true);
+    setIsSaving(true);
     
     try {
-      // Prepare FormData for file upload
       const data = new FormData();
       
       // Add property details
@@ -189,41 +225,55 @@ export function PropertyCreator({ teamId, userId, agents }: PropertyCreatorProps
       data.append("amenities", JSON.stringify(selectedAmenities));
       data.append("agentIds", JSON.stringify(selectedAgents));
       
-      // Add media files
+      // Add hero media ID
       const heroMedia = mediaFiles.find(m => m.isHero);
       if (heroMedia) {
         data.append("heroMediaId", heroMedia.id);
       }
       
-      mediaFiles.forEach((media, index) => {
-        data.append("media", media.file);
-        data.append(`mediaId_${index}`, media.id);
-        if (media.title) {
-          data.append(`mediaTitle_${index}`, media.title);
+      // Add existing media IDs and titles to keep
+      const existingMediaIds = mediaFiles
+        .filter(m => m.isExisting)
+        .map(m => m.id);
+      data.append("existingMediaIds", JSON.stringify(existingMediaIds));
+      
+      // Add existing media titles
+      const existingMediaTitles = mediaFiles
+        .filter(m => m.isExisting && m.title)
+        .map(m => ({ id: m.id, title: m.title }));
+      data.append("existingMediaTitles", JSON.stringify(existingMediaTitles));
+      
+      // Add new media files
+      const newMedia = mediaFiles.filter(m => !m.isExisting && m.file);
+      newMedia.forEach((media, index) => {
+        if (media.file) {
+          data.append("media", media.file);
+          data.append(`mediaId_${index}`, media.id);
+          if (media.title) {
+            data.append(`mediaTitle_${index}`, media.title);
+          }
         }
       });
       
-      // Create property
-      const response = await fetch("/api/properties/create", {
-        method: "POST",
+      // Update property
+      const response = await fetch(`/api/properties/${propertyId}/update`, {
+        method: "PUT",
         body: data,
       });
       
       if (!response.ok) {
         const error = await response.json();
-        console.error("Server error:", error);
-        throw new Error(error.error || "Failed to create property");
+        throw new Error(error.error || "Failed to update property");
       }
       
-      const result = await response.json();
-      
-      // Redirect to property page
-      router.push(result.property.url);
+      // Redirect back to dashboard
+      router.push("/dashboard");
+      router.refresh();
     } catch (error) {
-      console.error("Failed to publish property:", error);
-      alert(error instanceof Error ? error.message : "Failed to publish property. Please try again.");
+      console.error("Failed to save property:", error);
+      alert(error instanceof Error ? error.message : "Failed to save property. Please try again.");
     } finally {
-      setIsPublishing(false);
+      setIsSaving(false);
     }
   };
 
@@ -234,7 +284,7 @@ export function PropertyCreator({ teamId, userId, agents }: PropertyCreatorProps
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Upload className="w-5 h-5" />
-            Upload Media
+            Media
           </CardTitle>
           <CardDescription>
             Upload photos and videos. Videos are mobile-first and will be featured prominently.
@@ -255,7 +305,7 @@ export function PropertyCreator({ teamId, userId, agents }: PropertyCreatorProps
               <Button variant="outline" size="lg" className="w-full" asChild>
                 <span className="cursor-pointer">
                   <Upload className="w-5 h-5 mr-2" />
-                  Choose Photos & Videos
+                  Add More Photos & Videos
                 </span>
               </Button>
             </label>
@@ -335,15 +385,15 @@ export function PropertyCreator({ teamId, userId, agents }: PropertyCreatorProps
           )}
 
           {/* Photos Section */}
-          {mediaFiles.filter(m => m.type === "image").length > 0 && (
+          {mediaFiles.filter(m => m.type === "photo").length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center gap-2 pb-2 border-b">
                 <ImageIcon className="w-5 h-5 text-primary" />
                 <h3 className="font-semibold text-lg">Photos</h3>
-                <Badge variant="secondary">{mediaFiles.filter(m => m.type === "image").length}</Badge>
+                <Badge variant="secondary">{mediaFiles.filter(m => m.type === "photo").length}</Badge>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {mediaFiles.filter(m => m.type === "image").map(media => (
+                {mediaFiles.filter(m => m.type === "photo").map(media => (
                   <div key={media.id} className="space-y-2">
                     <div
                       className={`relative aspect-video rounded-lg overflow-hidden border-2 ${
@@ -647,31 +697,31 @@ export function PropertyCreator({ teamId, userId, agents }: PropertyCreatorProps
         </CardContent>
       </Card>
 
-      {/* Publish Button */}
+      {/* Save Button */}
       <div className="sticky bottom-6 z-10">
         <Card className="shadow-lg">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-semibold">Ready to publish?</p>
+                <p className="font-semibold">Ready to save changes?</p>
                 <p className="text-sm text-muted-foreground">
-                  Your property will be live instantly
+                  Your updates will be saved immediately
                 </p>
               </div>
               <Button
                 size="lg"
-                onClick={handlePublish}
-                disabled={isPublishing || !formData.name || !formData.price || mediaFiles.length === 0}
+                onClick={handleSave}
+                disabled={isSaving || !formData.name || !formData.price || mediaFiles.length === 0}
               >
-                {isPublishing ? (
+                {isSaving ? (
                   <>
                     <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Publishing...
+                    Saving...
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-5 h-5 mr-2" />
-                    Publish Property
+                    <Save className="w-5 h-5 mr-2" />
+                    Save Changes
                   </>
                 )}
               </Button>

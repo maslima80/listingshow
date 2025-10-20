@@ -43,6 +43,46 @@
   --radius: 0.5rem;
 }
 
+/* Dark Mode - Premium Slate */
+.dark {
+  /* Base colors */
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  
+  /* Card */
+  --card: 240 6% 10%;
+  --card-foreground: 0 0% 98%;
+  
+  /* Popover */
+  --popover: 240 6% 10%;
+  --popover-foreground: 0 0% 98%;
+  
+  /* Primary (accent color) */
+  --primary: 38 45% 50%;
+  --primary-foreground: 0 0% 98%;
+  
+  /* Secondary */
+  --secondary: 240 4% 16%;
+  --secondary-foreground: 0 0% 98%;
+  
+  /* Muted */
+  --muted: 240 4% 16%;
+  --muted-foreground: 240 5% 64.9%;
+  
+  /* Accent */
+  --accent: 38 45% 55%;
+  --accent-foreground: 0 0% 98%;
+  
+  /* Destructive */
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  
+  /* Border */
+  --border: 240 4% 16%;
+  --input: 240 4% 16%;
+  --ring: 38 45% 50%;
+}
+
 /* Dashboard is always Light Luxe - clean and professional */
 /* Public pages (properties, hub) will use inline styles based on user's theme choice */
 

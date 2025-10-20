@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { PlusCircle, Users, Palette, CreditCard, LayoutGrid, UserCircle, ExternalLink, Eye } from "lucide-react";
+import { PropertyCard } from "@/components/property-card";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -198,20 +199,41 @@ export default async function DashboardPage() {
             </Card>
           </div>
 
-          {/* Empty State */}
-          <div className="mt-12 text-center p-12 bg-white rounded-2xl border-2 border-dashed border-slate-200">
-            <div className="max-w-md mx-auto">
-              <div className="text-6xl mb-4">🏡</div>
-              <h3 className="text-2xl font-bold mb-2">No properties yet</h3>
-              <p className="text-slate-600 mb-6">
-                Create your first cinematic property page and start showcasing
-              </p>
-              <Button size="lg" disabled>
-                <PlusCircle className="w-5 h-5 mr-2" />
-                Create Your First Property
-              </Button>
+          {/* Properties Section */}
+          {teamProperties.length > 0 ? (
+            <div className="mt-12">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold">Your Properties</h3>
+                <Badge variant="secondary">{teamProperties.length} {teamProperties.length === 1 ? 'property' : 'properties'}</Badge>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {teamProperties.map(({ property, coverMedia }) => (
+                  <PropertyCard
+                    key={property.id}
+                    property={property}
+                    coverMedia={coverMedia}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          ) : (
+            /* Empty State */
+            <div className="mt-12 text-center p-12 bg-white rounded-2xl border-2 border-dashed border-slate-200">
+              <div className="max-w-md mx-auto">
+                <div className="text-6xl mb-4">🏡</div>
+                <h3 className="text-2xl font-bold mb-2">No properties yet</h3>
+                <p className="text-slate-600 mb-6">
+                  Create your first cinematic property page and start showcasing
+                </p>
+                <Link href="/dashboard/properties/new">
+                  <Button size="lg">
+                    <PlusCircle className="w-5 h-5 mr-2" />
+                    Create Your First Property
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </div>

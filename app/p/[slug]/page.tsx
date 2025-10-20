@@ -1,21 +1,9 @@
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { properties, mediaAssets, propertyAgents, agentProfiles } from "@/lib/db/schema";
+import { properties, mediaAssets, propertyAgents, agentProfiles, teamThemes, themes } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { 
-  Bed, 
-  Bath, 
-  Car, 
-  Maximize, 
-  MapPin,
-  Mail,
-  Phone,
-  MessageCircle,
-  Share2
-} from "lucide-react";
+import { MapPin } from "lucide-react";
+import { PropertyPageClient } from "@/components/property-page-client";
 
 export default async function PropertyPage({ params }: { params: { slug: string } }) {
   // Get property
@@ -46,10 +34,46 @@ export default async function PropertyPage({ params }: { params: { slug: string 
     .innerJoin(agentProfiles, eq(propertyAgents.agentProfileId, agentProfiles.id))
     .where(eq(propertyAgents.propertyId, property.id));
 
+  // Get team theme with accent color and mode
+  const [teamThemeData] = await db
+    .select({
+      accentColor: teamThemes.accentColor,
+      themeMode: themes.mode,
+    })
+    .from(teamThemes)
+    .innerJoin(themes, eq(teamThemes.themeId, themes.id))
+    .where(eq(teamThemes.teamId, property.teamId))
+    .limit(1);
+
+  const accentColor = teamThemeData?.accentColor || '#C9A66B';
+  const themeMode = teamThemeData?.themeMode || 'light';
+
   const heroMedia = media.find(m => m.id === property.coverAssetId) || media[0];
 
+  // Format agents data
+  const formattedAgents = propertyAgentsList.map(({ agent, isPrimary }) => {
+    const socialLinks = agent.socialLinks as { instagram?: string; facebook?: string; linkedin?: string; twitter?: string; website?: string } | null;
+    
+    return {
+      id: agent.id,
+      name: agent.name,
+      title: agent.title,
+      photoUrl: agent.photoUrl,
+      email: agent.email,
+      phone: agent.phone,
+      whatsapp: agent.whatsapp,
+      bio: agent.bio,
+      isPrimary,
+      instagram: socialLinks?.instagram || null,
+      facebook: socialLinks?.facebook || null,
+      linkedin: socialLinks?.linkedin || null,
+      twitter: socialLinks?.twitter || null,
+      website: socialLinks?.website || null,
+    };
+  });
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className={`min-h-screen ${themeMode === 'dark' ? 'dark bg-zinc-950 text-zinc-100' : 'bg-white text-zinc-900'}`}>
       {/* Hero Section */}
       <div className="relative h-[70vh] bg-black">
         {heroMedia && (
@@ -89,189 +113,23 @@ export default async function PropertyPage({ params }: { params: { slug: string 
         </div>
       </div>
 
-      {/* Content */}
-      <div className="container mx-auto max-w-6xl px-4 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Quick Stats */}
-            <Card>
-              <CardContent className="p-6">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                  {property.beds && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Bed className="w-6 h-6 text-primary" />
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold">{property.beds}</div>
-                        <div className="text-sm text-muted-foreground">Beds</div>
-                      </div>
-                    </div>
-                  )}
-                  {property.baths && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Bath className="w-6 h-6 text-primary" />
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold">{property.baths}</div>
-                        <div className="text-sm text-muted-foreground">Baths</div>
-                      </div>
-                    </div>
-                  )}
-                  {property.parking && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Car className="w-6 h-6 text-primary" />
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold">{property.parking}</div>
-                        <div className="text-sm text-muted-foreground">Parking</div>
-                      </div>
-                    </div>
-                  )}
-                  {property.areaSqft && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Maximize className="w-6 h-6 text-primary" />
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold">
-                          {parseFloat(property.areaSqft).toLocaleString()}
-                        </div>
-                        <div className="text-sm text-muted-foreground">Sq Ft</div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Description */}
-            {property.description && (
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="text-2xl font-bold mb-4">About This Property</h2>
-                  <p className="text-muted-foreground whitespace-pre-wrap">
-                    {property.description}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Amenities */}
-            {property.amenities && property.amenities.length > 0 && (
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="text-2xl font-bold mb-4">Highlights</h2>
-                  <div className="flex flex-wrap gap-2">
-                    {property.amenities.map((amenity, index) => (
-                      <Badge key={index} variant="secondary" className="text-base py-2 px-4">
-                        {amenity}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Media Gallery */}
-            {media.length > 1 && (
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="text-2xl font-bold mb-4">Gallery</h2>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {media.map((item) => (
-                      <div key={item.id} className="aspect-video rounded-lg overflow-hidden">
-                        {item.type === "video" ? (
-                          <video
-                            src={item.url}
-                            className="w-full h-full object-cover"
-                            controls
-                          />
-                        ) : (
-                          <img
-                            src={item.url}
-                            alt="Property"
-                            className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
-                          />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Share Button */}
-            <Button variant="outline" className="w-full" size="lg">
-              <Share2 className="w-5 h-5 mr-2" />
-              Share Property
-            </Button>
-
-            {/* Agent Cards */}
-            {propertyAgentsList.map(({ agent, isPrimary }) => (
-              <Card key={agent.id}>
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4 mb-4">
-                    {agent.photoUrl ? (
-                      <img
-                        src={agent.photoUrl}
-                        alt={agent.name}
-                        className="w-16 h-16 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                        <span className="text-xl font-bold">
-                          {agent.name.charAt(0)}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex-1">
-                      <h3 className="font-bold text-lg">{agent.name}</h3>
-                      {agent.title && (
-                        <p className="text-sm text-muted-foreground">{agent.title}</p>
-                      )}
-                      {isPrimary && (
-                        <Badge variant="default" className="mt-1">Primary Agent</Badge>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {agent.bio && (
-                    <p className="text-sm text-muted-foreground mb-4">{agent.bio}</p>
-                  )}
-
-                  <div className="space-y-2">
-                    {agent.email && (
-                      <Button variant="outline" className="w-full justify-start" size="sm">
-                        <Mail className="w-4 h-4 mr-2" />
-                        Email
-                      </Button>
-                    )}
-                    {agent.phone && (
-                      <Button variant="outline" className="w-full justify-start" size="sm">
-                        <Phone className="w-4 h-4 mr-2" />
-                        Call
-                      </Button>
-                    )}
-                    {agent.whatsapp && (
-                      <Button variant="outline" className="w-full justify-start" size="sm">
-                        <MessageCircle className="w-4 h-4 mr-2" />
-                        WhatsApp
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </div>
+      {/* Client-side Interactive Content */}
+      <PropertyPageClient
+        property={{
+          title: property.title,
+          price: property.price,
+          location: property.location,
+          beds: property.beds,
+          baths: property.baths,
+          parking: property.parking,
+          areaSqft: property.areaSqft,
+          description: property.description,
+          amenities: property.amenities,
+        }}
+        media={media}
+        agents={formattedAgents}
+        accentColor={accentColor}
+      />
     </div>
   );
 }
