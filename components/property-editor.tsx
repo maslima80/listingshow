@@ -584,10 +584,14 @@ export function PropertyEditor({
               </Label>
               <Input
                 id="beds"
-                type="number"
-                lang="en-US"
+                type="text"
+                inputMode="numeric"
                 value={formData.beds}
-                onChange={(e) => setFormData(prev => ({ ...prev, beds: e.target.value }))}
+                onChange={(e) => {
+                  // Only allow numbers
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  setFormData(prev => ({ ...prev, beds: value }));
+                }}
                 placeholder="3"
               />
             </div>
@@ -599,12 +603,17 @@ export function PropertyEditor({
               </Label>
               <Input
                 id="baths"
-                type="number"
-                step="0.5"
-                min="0"
-                lang="en-US"
+                type="text"
+                inputMode="decimal"
                 value={formData.baths}
-                onChange={(e) => setFormData(prev => ({ ...prev, baths: e.target.value }))}
+                onChange={(e) => {
+                  // Only allow numbers and single decimal point
+                  const value = e.target.value.replace(/[^0-9.]/g, '');
+                  // Ensure only one decimal point
+                  const parts = value.split('.');
+                  const formatted = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : value;
+                  setFormData(prev => ({ ...prev, baths: formatted }));
+                }}
                 placeholder="2"
               />
             </div>
@@ -616,10 +625,14 @@ export function PropertyEditor({
               </Label>
               <Input
                 id="parking"
-                type="number"
-                lang="en-US"
+                type="text"
+                inputMode="numeric"
                 value={formData.parking}
-                onChange={(e) => setFormData(prev => ({ ...prev, parking: e.target.value }))}
+                onChange={(e) => {
+                  // Only allow numbers
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  setFormData(prev => ({ ...prev, parking: value }));
+                }}
                 placeholder="2"
               />
             </div>
@@ -631,10 +644,14 @@ export function PropertyEditor({
               </Label>
               <Input
                 id="sqft"
-                type="number"
-                lang="en-US"
+                type="text"
+                inputMode="numeric"
                 value={formData.sqft}
-                onChange={(e) => setFormData(prev => ({ ...prev, sqft: e.target.value }))}
+                onChange={(e) => {
+                  // Only allow numbers
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  setFormData(prev => ({ ...prev, sqft: value }));
+                }}
                 placeholder="2500"
               />
             </div>
