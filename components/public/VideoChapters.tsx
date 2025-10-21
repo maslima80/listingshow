@@ -8,6 +8,7 @@ interface VideoChapter {
   thumbnailUrl: string;
   playbackUrl: string;
   order: number;
+  durationSec?: number | null;
 }
 
 interface VideoChaptersProps {
@@ -22,6 +23,14 @@ export function VideoChapters({ chapters, onChapterClick, accentColor }: VideoCh
 
   // Generate fallback titles
   const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+  
+  // Format duration in MM:SS format
+  const formatDuration = (seconds?: number | null): string => {
+    if (!seconds || seconds === 0) return '...'; // Show ... while encoding
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
   
   return (
     <div className="py-8 sm:py-12 bg-background">
@@ -82,7 +91,7 @@ export function VideoChapters({ chapters, onChapterClick, accentColor }: VideoCh
                       {/* Duration Badge */}
                       <div className="absolute top-3 right-3">
                         <div className="bg-black/80 backdrop-blur-sm rounded px-2 py-1 text-white text-xs font-medium">
-                          0:45
+                          {formatDuration(chapter.durationSec)}
                         </div>
                       </div>
 

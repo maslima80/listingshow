@@ -104,6 +104,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
     thumbnailUrl: video.thumbUrl || video.url, // Use Bunny.net thumbnail
     playbackUrl: video.url,
     order: video.position || index,
+    durationSec: video.durationSec,
   }));
 
   // Format photos

@@ -99,6 +99,7 @@ export async function POST(request: NextRequest) {
       let uploadedUrl: string;
       let thumbnailUrl: string | null = null;
       let bunnyVideoId: string | null = null;
+      let durationSec: number | null = null;
       
       // Upload to ImageKit for photos, Bunny.net for videos
       if (!isVideo) {
@@ -133,6 +134,7 @@ export async function POST(request: NextRequest) {
           uploadedUrl = result.streamUrl;
           thumbnailUrl = result.thumbnailUrl;
           bunnyVideoId = result.videoId;
+          durationSec = result.durationSec;
         } catch (error) {
           console.error('Bunny.net upload failed:', error);
           // Fallback to local storage if Bunny.net fails
@@ -152,6 +154,7 @@ export async function POST(request: NextRequest) {
           position: i,
           provider: isVideo ? 'bunny' : 'imagekit',
           providerId: bunnyVideoId,
+          durationSec: durationSec,
         })
         .returning();
       

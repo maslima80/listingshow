@@ -46,7 +46,7 @@ export async function uploadToBunny(
   videoBuffer: Buffer,
   title: string,
   collectionId?: string
-): Promise<{ videoId: string; thumbnailUrl: string; streamUrl: string; hlsUrl: string }> {
+): Promise<{ videoId: string; thumbnailUrl: string; streamUrl: string; hlsUrl: string; durationSec: number }> {
   try {
     if (!BUNNY_STREAM_API_KEY || !BUNNY_LIBRARY_ID) {
       throw new Error('Bunny.net credentials not configured');
@@ -113,7 +113,7 @@ export async function uploadToBunny(
       const thumbnailUrl = `https://${BUNNY_CDN_HOSTNAME}/${videoId}/thumbnail.jpg`;
       const streamUrl = `https://iframe.mediadelivery.net/embed/${BUNNY_LIBRARY_ID}/${videoId}?autoplay=true&preload=true`;
       const hlsUrl = `https://${BUNNY_CDN_HOSTNAME}/${videoId}/playlist.m3u8`;
-      return { videoId, thumbnailUrl, streamUrl, hlsUrl };
+      return { videoId, thumbnailUrl, streamUrl, hlsUrl, durationSec: 0 };
     }
 
     const details = await detailsResponse.json();
@@ -122,11 +122,14 @@ export async function uploadToBunny(
     const thumbnailUrl = `https://${BUNNY_CDN_HOSTNAME}/${videoId}/thumbnail.jpg`;
     const streamUrl = `https://iframe.mediadelivery.net/embed/${BUNNY_LIBRARY_ID}/${videoId}?autoplay=true&preload=true`;
     const hlsUrl = `https://${BUNNY_CDN_HOSTNAME}/${videoId}/playlist.m3u8`;
+    // Bunny returns duration in 'length' field (seconds) - may be 0 if still encoding
+    const durationSec = Math.round(details.length || 0);
     
     console.log('Bunny.net video uploaded:', {
       videoId,
       thumbnailUrl,
       streamUrl,
+      durationSec,
       status: details.status,
       encodeProgress: details.encodeProgress
     });
@@ -136,6 +139,7 @@ export async function uploadToBunny(
       thumbnailUrl,
       streamUrl,
       hlsUrl,
+      durationSec,
     };
   } catch (error) {
     console.error('Bunny.net upload error:', error);
