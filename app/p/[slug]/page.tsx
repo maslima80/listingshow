@@ -4,12 +4,15 @@ import { properties, mediaAssets, propertyAgents, agentProfiles, teamThemes, the
 import { eq } from "drizzle-orm";
 import { CinematicPropertyPage } from "@/components/public/CinematicPropertyPage";
 
-export default async function PropertyPage({ params }: { params: { slug: string } }) {
+export default async function PropertyPage({ params }: { params: Promise<{ slug: string }> }) {
+  // Await params (Next.js 15 requirement)
+  const { slug } = await params;
+
   // Get property
   const [property] = await db
     .select()
     .from(properties)
-    .where(eq(properties.slug, params.slug))
+    .where(eq(properties.slug, slug))
     .limit(1);
 
   if (!property) {

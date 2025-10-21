@@ -58,6 +58,7 @@ interface PropertyEditorProps {
     sqft: string;
     description: string;
     amenities: string[];
+    externalLinks: { label: string; url: string; }[];
     agentIds: string[];
   };
   existingMedia: ExistingMedia[];
@@ -125,7 +126,7 @@ export function PropertyEditor({
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>(initialData.amenities);
   const [selectedAgents, setSelectedAgents] = useState<string[]>(initialData.agentIds);
   const [customAmenity, setCustomAmenity] = useState("");
-  const [externalLinks, setExternalLinks] = useState<{ label: string; url: string; }[]>([]);
+  const [externalLinks, setExternalLinks] = useState<{ label: string; url: string; }[]>(initialData.externalLinks || []);
   const [newLinkLabel, setNewLinkLabel] = useState("");
   const [newLinkUrl, setNewLinkUrl] = useState("");
   

@@ -101,6 +101,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
               sqft: property.areaSqft || "",
               description: property.description || "",
               amenities: property.amenities || [],
+              externalLinks: property.externalLinks as { label: string; url: string; }[] || [],
               agentIds: assignedAgents.map(a => a.agentId),
             }}
             existingMedia={media.map(m => ({

@@ -76,6 +76,7 @@ export async function PUT(
       sqft: formData.get("sqft") as string,
       description: formData.get("description") as string,
       amenities: JSON.parse(formData.get("amenities") as string || "[]"),
+      externalLinks: JSON.parse(formData.get("externalLinks") as string || "[]"),
       agentIds: JSON.parse(formData.get("agentIds") as string || "[]"),
       existingMediaIds: JSON.parse(formData.get("existingMediaIds") as string || "[]"),
       existingMediaTitles: JSON.parse(formData.get("existingMediaTitles") as string || "[]"),
