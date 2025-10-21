@@ -92,38 +92,41 @@ export function HostCard({ name, title, photoUrl, bio, email, phone, whatsapp, i
               Schedule Tour
             </Button>
             
-            {/* Expand/Collapse Button */}
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="p-2 rounded-full hover:bg-muted transition-colors"
-              aria-label={isExpanded ? "Show less" : "Show more"}
-            >
-              {isExpanded ? (
-                <ChevronUp className="w-5 h-5" style={{ color: accentColor }} />
-              ) : (
-                <ChevronDown className="w-5 h-5" style={{ color: accentColor }} />
-              )}
-            </button>
+            {/* Expand/Collapse Button - Only show if there's content to expand */}
+            {(bio || hasSocialLinks || hasContactInfo) && (
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="p-2 rounded-full hover:bg-muted transition-colors"
+                aria-label={isExpanded ? "Show less" : "Show more"}
+              >
+                {isExpanded ? (
+                  <ChevronUp className="w-5 h-5" style={{ color: accentColor }} />
+                ) : (
+                  <ChevronDown className="w-5 h-5" style={{ color: accentColor }} />
+                )}
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Expanded Details */}
-        {isExpanded && (
+        {/* Expanded Details - Only show if there's content to display */}
+        {isExpanded && (bio || hasSocialLinks || hasContactInfo) && (
           <div className="mt-6 pt-6 border-t border-border animate-in slide-in-from-top duration-300">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Left: Bio & Social */}
-              <div className="space-y-4">
-                {bio && (
-                  <div>
-                    <h4 className="text-sm font-semibold mb-2">About</h4>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{bio}</p>
-                  </div>
-                )}
+              {/* Left: Bio & Social - Only show if bio or social links exist */}
+              {(bio || hasSocialLinks) && (
+                <div className="space-y-4">
+                  {bio && (
+                    <div>
+                      <h4 className="text-sm font-semibold mb-2">About</h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{bio}</p>
+                    </div>
+                  )}
 
-                {hasSocialLinks && (
-                  <div>
-                    <h4 className="text-sm font-semibold mb-2">Connect</h4>
-                    <div className="flex gap-2">
+                  {hasSocialLinks && (
+                    <div>
+                      <h4 className="text-sm font-semibold mb-2">Connect</h4>
+                      <div className="flex gap-2">
                       {instagram && (
                         <a
                           href={instagram}
@@ -175,13 +178,33 @@ export function HostCard({ name, title, photoUrl, bio, email, phone, whatsapp, i
                     </div>
                   </div>
                 )}
-              </div>
+                </div>
+              )}
 
-              {/* Right: Contact Options */}
+              {/* Right: Contact Options - Only show if any contact info exists */}
               {hasContactInfo && (
                 <div>
                   <h4 className="text-sm font-semibold mb-3">Contact Options</h4>
                   <div className="space-y-2">
+                    {email && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleEmail}
+                        className="w-full justify-start hover:text-white transition-colors"
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = accentColor;
+                          e.currentTarget.style.borderColor = accentColor;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = '';
+                          e.currentTarget.style.borderColor = '';
+                        }}
+                      >
+                        <Mail className="w-4 h-4 mr-2" />
+                        {email}
+                      </Button>
+                    )}
                     {phone && (
                       <Button
                         variant="outline"
@@ -218,25 +241,6 @@ export function HostCard({ name, title, photoUrl, bio, email, phone, whatsapp, i
                       >
                         <MessageCircle className="w-4 h-4 mr-2" />
                         WhatsApp
-                      </Button>
-                    )}
-                    {email && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleEmail}
-                        className="w-full justify-start hover:text-white transition-colors"
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = accentColor;
-                          e.currentTarget.style.borderColor = accentColor;
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = '';
-                          e.currentTarget.style.borderColor = '';
-                        }}
-                      >
-                        <Mail className="w-4 h-4 mr-2" />
-                        {email}
                       </Button>
                     )}
                   </div>
