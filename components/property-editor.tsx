@@ -757,6 +757,24 @@ export function PropertyEditor({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Quick Add Popular Platforms */}
+          <div>
+            <Label className="text-xs text-muted-foreground mb-2 block">Quick Add Popular Platforms</Label>
+            <div className="flex flex-wrap gap-2">
+              {["Zillow", "Realtor.com", "Redfin", "Trulia", "MLS"].map((platform) => (
+                <Button
+                  key={platform}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setNewLinkLabel(platform)}
+                  className="text-xs"
+                >
+                  {platform}
+                </Button>
+              ))}
+            </div>
+          </div>
+
           {/* Add New Link Form */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <Input
