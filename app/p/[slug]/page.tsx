@@ -60,9 +60,15 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
     || videos[0]
     || media[0];
 
-  // Find featured video (first video marked as hero or first video)
-  const featuredVideo = media.find(m => m.id === property.coverAssetId && m.type === "video") 
-    || videos[0];
+  // Determine if hero is a video
+  const isHeroVideo = heroMedia?.type === "video";
+
+  // Get hero video URL (if hero is video)
+  const heroVideoUrl = isHeroVideo ? heroMedia?.url : null;
+
+  // Get first video URL (for preview if hero is image)
+  const firstVideo = videos[0];
+  const firstVideoUrl = firstVideo?.url || null;
 
   // Format agents data
   const formattedAgents = propertyAgentsList.map(({ agent, isPrimary }) => {
@@ -114,7 +120,9 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
       <CinematicPropertyPage
         // Hero
         heroPhoto={(heroMedia?.type === 'video' ? heroMedia?.thumbUrl : heroMedia?.url) || ''}
-        featuredVideo={heroMedia?.type === 'video' ? heroMedia?.url : featuredVideo?.url}
+        featuredVideo={heroVideoUrl}
+        isHeroVideo={isHeroVideo}
+        firstVideoUrl={firstVideoUrl}
         title={property.title}
         location={property.location}
         price={`$${parseFloat(property.price || "0").toLocaleString()}`}

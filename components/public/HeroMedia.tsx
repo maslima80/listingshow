@@ -9,6 +9,8 @@ import { HLSVideoPlayer } from "../HLSVideoPlayer";
 interface HeroMediaProps {
   heroPhoto: string;
   featuredVideo?: string | null;
+  isHeroVideo: boolean; // True if hero is a video, false if image
+  firstVideoUrl?: string | null; // First video from gallery (if hero is image)
   title: string;
   location: string;
   price: string;
@@ -22,6 +24,8 @@ interface HeroMediaProps {
 export function HeroMedia({
   heroPhoto,
   featuredVideo,
+  isHeroVideo,
+  firstVideoUrl,
   title,
   location,
   price,
@@ -32,8 +36,15 @@ export function HeroMedia({
   accentColor,
 }: HeroMediaProps) {
   const [showVideo, setShowVideo] = useState(false);
-  const [isVideoReady, setIsVideoReady] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const [hasPlayedPreview, setHasPlayedPreview] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const previewTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const autoplayTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  // Determine which video to preview
+  const previewVideoUrl = isHeroVideo ? featuredVideo : firstVideoUrl;
+  const PREVIEW_DURATION = 5000; // 5 seconds
+  const AUTOPLAY_DELAY = 2000; // 2 seconds after page load
 
   // Check for reduced motion/data preferences
   const prefersReducedMotion = typeof window !== 'undefined' 
@@ -44,54 +55,36 @@ export function HeroMedia({
     ? window.matchMedia('(prefers-reduced-data: reduce)').matches
     : false;
 
+  // Auto-preview logic: Play video preview once after delay
   useEffect(() => {
-    // Skip video if no featured video or user prefers reduced data
-    if (!featuredVideo || prefersReducedData) return;
+    // Skip if no video, already played, or user prefers reduced data
+    if (!previewVideoUrl || hasPlayedPreview || prefersReducedData) return;
 
-    // Load video after a delay (using requestIdleCallback or setTimeout)
-    const loadVideo = () => {
-      if (videoRef.current) {
-        videoRef.current.load();
-      }
-    };
-
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(loadVideo);
-    } else {
-      setTimeout(loadVideo, 1200);
-    }
-  }, [featuredVideo, prefersReducedData]);
-
-  const handleVideoCanPlay = () => {
-    setIsVideoReady(true);
-    
-    // Fade from photo to video after delay
-    const fadeDelay = prefersReducedMotion ? 0 : 1200;
-    setTimeout(() => {
+    // Start preview after delay
+    autoplayTimerRef.current = setTimeout(() => {
       setShowVideo(true);
-      if (videoRef.current) {
-        videoRef.current.play().catch(() => {
-          // Autoplay failed, keep showing photo
-          setShowVideo(false);
-        });
-      }
-    }, fadeDelay);
-  };
+      setHasPlayedPreview(true);
 
-  // Handle video end - return to photo
-  const handleVideoEnd = () => {
-    setShowVideo(false);
-  };
+      // Stop preview after PREVIEW_DURATION
+      previewTimerRef.current = setTimeout(() => {
+        setShowVideo(false);
+      }, PREVIEW_DURATION);
+    }, AUTOPLAY_DELAY);
+
+    // Cleanup
+    return () => {
+      if (autoplayTimerRef.current) clearTimeout(autoplayTimerRef.current);
+      if (previewTimerRef.current) clearTimeout(previewTimerRef.current);
+    };
+  }, [previewVideoUrl, hasPlayedPreview, prefersReducedData]);
 
   // Pause video when tab is not visible
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (videoRef.current) {
-        if (document.hidden) {
-          videoRef.current.pause();
-        } else if (showVideo) {
-          videoRef.current.play().catch(() => {});
-        }
+      if (document.hidden && showVideo) {
+        // Stop preview if user switches tabs
+        setShowVideo(false);
+        if (previewTimerRef.current) clearTimeout(previewTimerRef.current);
       }
     };
 
@@ -119,18 +112,21 @@ export function HeroMedia({
         decoding="async"
       />
 
-      {/* Featured Video - Fades in after photo, plays once */}
-      {featuredVideo && !prefersReducedData && (
-        <div className={`absolute inset-0 transition-opacity duration-1000 ${
-          showVideo ? 'opacity-100' : 'opacity-0'
-        }`}>
-          <HLSVideoPlayer
-            src={featuredVideo}
+      {/* Video Preview - Fades in after delay, plays for 5 seconds, then fades out */}
+      {previewVideoUrl && !prefersReducedData && (
+        <div 
+          className={`absolute inset-0 transition-opacity duration-1000 pointer-events-none ${
+            showVideo ? 'opacity-100' : 'opacity-0'
+          }`}
+          style={{ zIndex: showVideo ? 2 : 1 }}
+        >
+          <iframe
+            ref={iframeRef}
+            src={`${previewVideoUrl}&muted=1`}
             className="w-full h-full object-cover"
-            controls={false}
-            autoPlay={false}
-            playsInline
-            onLoadedMetadata={handleVideoCanPlay}
+            style={{ border: 'none', pointerEvents: 'none' }}
+            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+            allowFullScreen
           />
         </div>
       )}

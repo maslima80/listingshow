@@ -42,6 +42,8 @@ interface CinematicPropertyPageProps {
   // Hero
   heroPhoto: string;
   featuredVideo?: string | null;
+  isHeroVideo: boolean;
+  firstVideoUrl?: string | null;
   title: string;
   location: string;
   price: string;
@@ -73,6 +75,8 @@ interface CinematicPropertyPageProps {
 export function CinematicPropertyPage({
   heroPhoto,
   featuredVideo,
+  isHeroVideo,
+  firstVideoUrl,
   title,
   location,
   price,
@@ -95,7 +99,14 @@ export function CinematicPropertyPage({
   const heroRef = useRef<HTMLDivElement>(null);
 
   const handleWatchFilm = () => {
-    setPlayerIndex(0);
+    // If hero is a video, find its index in videoChapters and start from there
+    if (isHeroVideo && featuredVideo) {
+      const heroVideoIndex = videoChapters.findIndex(v => v.playbackUrl === featuredVideo);
+      setPlayerIndex(heroVideoIndex >= 0 ? heroVideoIndex : 0);
+    } else {
+      // Otherwise start from first video
+      setPlayerIndex(0);
+    }
     setPlayerOpen(true);
   };
 
@@ -149,6 +160,8 @@ export function CinematicPropertyPage({
       <HeroMedia
         heroPhoto={heroPhoto}
         featuredVideo={featuredVideo}
+        isHeroVideo={isHeroVideo}
+        firstVideoUrl={firstVideoUrl}
         title={title}
         location={location}
         price={price}
