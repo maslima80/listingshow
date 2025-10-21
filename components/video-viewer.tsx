@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { HLSVideoPlayer } from "./HLSVideoPlayer";
 
 interface Video {
   id: string;
@@ -116,8 +117,7 @@ export function VideoViewer({ videos, initialIndex, onClose }: VideoViewerProps)
 
       {/* Video */}
       <div className="flex-1 flex items-center justify-center relative">
-        <video
-          ref={videoRef}
+        <HLSVideoPlayer
           src={currentVideo.url}
           className="w-full h-full object-contain max-h-screen"
           controls

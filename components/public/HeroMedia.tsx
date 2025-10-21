@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { MapPin, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatBathrooms } from "@/lib/utils/formatBathrooms";
+import { HLSVideoPlayer } from "../HLSVideoPlayer";
 
 interface HeroMediaProps {
   heroPhoto: string;
@@ -120,18 +121,18 @@ export function HeroMedia({
 
       {/* Featured Video - Fades in after photo, plays once */}
       {featuredVideo && !prefersReducedData && (
-        <video
-          ref={videoRef}
-          src={featuredVideo}
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-            showVideo ? 'opacity-100' : 'opacity-0'
-          }`}
-          muted
-          playsInline
-          onCanPlay={handleVideoCanPlay}
-          onEnded={handleVideoEnd}
-          preload="metadata"
-        />
+        <div className={`absolute inset-0 transition-opacity duration-1000 ${
+          showVideo ? 'opacity-100' : 'opacity-0'
+        }`}>
+          <HLSVideoPlayer
+            src={featuredVideo}
+            className="w-full h-full object-cover"
+            controls={false}
+            autoPlay={false}
+            playsInline
+            onLoadedMetadata={handleVideoCanPlay}
+          />
+        </div>
       )}
 
       {/* Gradient Overlay */}

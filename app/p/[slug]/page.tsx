@@ -54,9 +54,10 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
   const videos = media.filter(m => m.type === "video");
   const photos = media.filter(m => m.type === "photo");
 
-  // Find hero photo (coverAssetId or first photo)
-  const heroPhoto = media.find(m => m.id === property.coverAssetId && m.type === "photo") 
+  // Find hero media (coverAssetId or first photo/video)
+  const heroMedia = media.find(m => m.id === property.coverAssetId) 
     || photos[0] 
+    || videos[0]
     || media[0];
 
   // Find featured video (first video marked as hero or first video)
@@ -94,7 +95,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
   const videoChapters = videos.map((video, index) => ({
     id: video.id,
     title: video.label,
-    thumbnailUrl: video.url, // In production, use video thumbnail
+    thumbnailUrl: video.thumbUrl || video.url, // Use Bunny.net thumbnail
     playbackUrl: video.url,
     order: video.position || index,
   }));
@@ -112,8 +113,8 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
     <div className={`min-h-screen ${themeMode === 'dark' ? 'dark' : ''}`}>
       <CinematicPropertyPage
         // Hero
-        heroPhoto={heroPhoto?.url || ''}
-        featuredVideo={featuredVideo?.url}
+        heroPhoto={(heroMedia?.type === 'video' ? heroMedia?.thumbUrl : heroMedia?.url) || ''}
+        featuredVideo={heroMedia?.type === 'video' ? heroMedia?.url : featuredVideo?.url}
         title={property.title}
         location={property.location}
         price={`$${parseFloat(property.price || "0").toLocaleString()}`}
