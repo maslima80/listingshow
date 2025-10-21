@@ -68,8 +68,25 @@ export function HeroMedia({
       setShowVideo(true);
       setHasPlayedPreview(true);
 
+      // Send play command to Bunny iframe after it loads
+      setTimeout(() => {
+        if (iframeRef.current?.contentWindow) {
+          iframeRef.current.contentWindow.postMessage(
+            JSON.stringify({ event: 'play' }),
+            '*'
+          );
+        }
+      }, 500); // Wait for iframe to load
+
       // Stop preview after PREVIEW_DURATION
       previewTimerRef.current = setTimeout(() => {
+        // Pause video before hiding
+        if (iframeRef.current?.contentWindow) {
+          iframeRef.current.contentWindow.postMessage(
+            JSON.stringify({ event: 'pause' }),
+            '*'
+          );
+        }
         setShowVideo(false);
       }, PREVIEW_DURATION);
     }, initialDelay);
@@ -130,6 +147,7 @@ export function HeroMedia({
             style={{ border: 'none', pointerEvents: 'none' }}
             allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
             allowFullScreen
+            title="Video Preview"
           />
         </div>
       )}
