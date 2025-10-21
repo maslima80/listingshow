@@ -5,9 +5,7 @@ import { db } from "@/lib/db";
 import { properties, mediaAssets, propertyAgents } from "@/lib/db/schema";
 import { authOptions } from "@/lib/auth";
 import { eq, and, notInArray } from "drizzle-orm";
-import { writeFile, unlink } from "fs/promises";
-import { join } from "path";
-import crypto from "crypto";
+import { uploadToImageKit } from "@/lib/imagekit";
 
 const updatePropertySchema = z.object({
   name: z.string().min(1, "Property name is required"),
@@ -123,17 +121,7 @@ export async function PUT(
           )
         );
 
-      // Delete files from disk
-      for (const media of mediaToDelete) {
-        try {
-          const filepath = join(process.cwd(), "public", media.url);
-          await unlink(filepath);
-        } catch (error) {
-          console.error(`Failed to delete file ${media.url}:`, error);
-        }
-      }
-
-      // Delete from database
+      // Delete from database (ImageKit files will remain in CDN)
       if (mediaToDelete.length > 0) {
         await db
           .delete(mediaAssets)
@@ -145,21 +133,7 @@ export async function PUT(
           );
       }
     } else {
-      // If no existing media IDs, delete all existing media
-      const allMedia = await db
-        .select()
-        .from(mediaAssets)
-        .where(eq(mediaAssets.propertyId, id));
-
-      for (const media of allMedia) {
-        try {
-          const filepath = join(process.cwd(), "public", media.url);
-          await unlink(filepath);
-        } catch (error) {
-          console.error(`Failed to delete file ${media.url}:`, error);
-        }
-      }
-
+      // If no existing media IDs, delete all existing media from database
       await db
         .delete(mediaAssets)
         .where(eq(mediaAssets.propertyId, id));
@@ -177,24 +151,40 @@ export async function PUT(
       const mediaId = formData.get(`mediaId_${i}`) as string;
       const mediaTitle = formData.get(`mediaTitle_${i}`) as string;
       const isHero = mediaId === heroMediaId;
+      const isVideo = file.type.startsWith("video/");
       
-      // Generate unique filename
-      const ext = file.name.split(".").pop();
-      const filename = `${crypto.randomBytes(16).toString("hex")}.${ext}`;
-      const filepath = join(process.cwd(), "public", "uploads", "properties", filename);
+      let uploadedUrl: string;
       
-      // Save file
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      await writeFile(filepath, buffer);
+      // Upload to ImageKit for photos, keep local for videos (for now)
+      if (!isVideo) {
+        try {
+          const bytes = await file.arrayBuffer();
+          const buffer = Buffer.from(bytes);
+          
+          const result = await uploadToImageKit(
+            buffer,
+            file.name,
+            `/properties/${id}`
+          );
+          
+          uploadedUrl = result.url;
+        } catch (error) {
+          console.error('ImageKit upload failed:', error);
+          // Fallback to local storage if ImageKit fails
+          uploadedUrl = `/uploads/properties/${file.name}`;
+        }
+      } else {
+        // For videos, keep using local storage for now (will use Bunny.net later)
+        uploadedUrl = `/uploads/properties/${file.name}`;
+      }
       
       // Create media asset record
       const [mediaAsset] = await db
         .insert(mediaAssets)
         .values({
           propertyId: id,
-          type: file.type.startsWith("video/") ? "video" : "photo",
-          url: `/uploads/properties/${filename}`,
+          type: isVideo ? "video" : "photo",
+          url: uploadedUrl,
           label: mediaTitle || null,
           position: currentMediaCount + i,
         })

@@ -5,9 +5,7 @@ import { db } from "@/lib/db";
 import { properties, mediaAssets, propertyAgents } from "@/lib/db/schema";
 import { authOptions } from "@/lib/auth";
 import { eq } from "drizzle-orm";
-import { writeFile } from "fs/promises";
-import { join } from "path";
-import crypto from "crypto";
+import { uploadToImageKit } from "@/lib/imagekit";
 
 const createPropertySchema = z.object({
   name: z.string().min(1, "Property name is required"),
@@ -59,7 +57,7 @@ export async function POST(request: NextRequest) {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "")
-      + "-" + crypto.randomBytes(4).toString("hex");
+      + "-" + Math.random().toString(36).substring(2, 10);
 
     // Create property
     const [property] = await db
@@ -71,7 +69,7 @@ export async function POST(request: NextRequest) {
         price: validated.price.replace(/[^0-9.]/g, ''), // Remove non-numeric characters
         location: validated.location,
         beds: validated.beds ? parseInt(validated.beds) : null,
-        baths: validated.baths ? parseInt(validated.baths) : null,
+        baths: validated.baths ? validated.baths : null,
         parking: validated.parking ? parseInt(validated.parking) : null,
         areaSqft: validated.sqft ? validated.sqft.replace(/[^0-9.]/g, '') : null,
         description: validated.description || null,
@@ -92,24 +90,40 @@ export async function POST(request: NextRequest) {
       const mediaId = formData.get(`mediaId_${i}`) as string;
       const mediaTitle = formData.get(`mediaTitle_${i}`) as string;
       const isHero = mediaId === heroMediaId;
+      const isVideo = file.type.startsWith("video/");
       
-      // Generate unique filename
-      const ext = file.name.split(".").pop();
-      const filename = `${crypto.randomBytes(16).toString("hex")}.${ext}`;
-      const filepath = join(process.cwd(), "public", "uploads", "properties", filename);
+      let uploadedUrl: string;
       
-      // Save file
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      await writeFile(filepath, buffer);
+      // Upload to ImageKit for photos, keep local for videos (for now)
+      if (!isVideo) {
+        try {
+          const bytes = await file.arrayBuffer();
+          const buffer = Buffer.from(bytes);
+          
+          const result = await uploadToImageKit(
+            buffer,
+            file.name,
+            `/properties/${property.id}`
+          );
+          
+          uploadedUrl = result.url;
+        } catch (error) {
+          console.error('ImageKit upload failed:', error);
+          // Fallback to local storage if ImageKit fails
+          uploadedUrl = `/uploads/properties/${file.name}`;
+        }
+      } else {
+        // For videos, keep using local storage for now (will use Bunny.net later)
+        uploadedUrl = `/uploads/properties/${file.name}`;
+      }
       
       // Create media asset record
       const [mediaAsset] = await db
         .insert(mediaAssets)
         .values({
           propertyId: property.id,
-          type: file.type.startsWith("video/") ? "video" : "photo",
-          url: `/uploads/properties/${filename}`,
+          type: isVideo ? "video" : "photo",
+          url: uploadedUrl,
           label: mediaTitle || null,
           position: i,
         })
