@@ -115,7 +115,7 @@ export default async function PropertyPage({ params }: { params: { slug: string 
         location={property.location}
         price={`$${parseFloat(property.price || "0").toLocaleString()}`}
         beds={property.beds}
-        baths={property.baths}
+        baths={property.baths ? parseFloat(property.baths as string) : null}
         areaSqft={property.areaSqft}
         
         // Host
@@ -133,6 +133,7 @@ export default async function PropertyPage({ params }: { params: { slug: string 
         
         // End Credits
         agents={formattedAgents}
+        externalLinks={property.externalLinks as { label: string; url: string; }[] | null}
         
         // Theme
         accentColor={accentColor}

@@ -3,6 +3,7 @@
 import { User, Mail, Phone, Share2, Instagram, Facebook, Linkedin, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ContactFormMock } from "./ContactFormMock";
+import { ExternalLinks } from "./ExternalLinks";
 
 interface Agent {
   id: string;
@@ -18,14 +19,20 @@ interface Agent {
   website?: string | null;
 }
 
+interface ExternalLink {
+  label: string;
+  url: string;
+}
+
 interface EndCreditsProps {
   agents: Agent[];
   propertyTitle: string;
   accentColor: string;
+  externalLinks?: ExternalLink[];
   onShare: () => void;
 }
 
-export function EndCredits({ agents, propertyTitle, accentColor, onShare }: EndCreditsProps) {
+export function EndCredits({ agents, propertyTitle, accentColor, externalLinks, onShare }: EndCreditsProps) {
   const handleEmail = (email: string) => {
     window.location.href = `mailto:${email}`;
   };
@@ -196,6 +203,13 @@ export function EndCredits({ agents, propertyTitle, accentColor, onShare }: EndC
               <Share2 className="w-5 h-5 mr-2" />
               Share Property
             </Button>
+
+            {/* External Links - Below Share Button */}
+            {externalLinks && externalLinks.length > 0 && (
+              <div className="mt-6">
+                <ExternalLinks links={externalLinks} accentColor={accentColor} />
+              </div>
+            )}
           </div>
 
           {/* Right: Contact Form (Desktop Sticky) */}

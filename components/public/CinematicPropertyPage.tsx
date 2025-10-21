@@ -64,6 +64,7 @@ interface CinematicPropertyPageProps {
   
   // End Credits
   agents: Agent[];
+  externalLinks?: { label: string; url: string; }[] | null;
   
   // Theme
   accentColor: string;
@@ -84,6 +85,7 @@ export function CinematicPropertyPage({
   highlights,
   photos,
   agents,
+  externalLinks,
   accentColor,
 }: CinematicPropertyPageProps) {
   const [playerOpen, setPlayerOpen] = useState(false);
@@ -211,6 +213,7 @@ export function CinematicPropertyPage({
           agents={agents}
           propertyTitle={title}
           accentColor={accentColor}
+          externalLinks={externalLinks || []}
           onShare={handleShare}
         />
       </div>

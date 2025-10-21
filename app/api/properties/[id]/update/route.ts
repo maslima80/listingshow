@@ -20,6 +20,7 @@ const updatePropertySchema = z.object({
   sqft: z.string().optional(),
   description: z.string().optional(),
   amenities: z.array(z.string()).default([]),
+  externalLinks: z.array(z.object({ label: z.string(), url: z.string() })).default([]),
   agentIds: z.array(z.string()).default([]),
   existingMediaIds: z.array(z.string()).default([]),
   existingMediaTitles: z.array(z.object({ id: z.string(), title: z.string() })).default([]),
@@ -91,11 +92,12 @@ export async function PUT(
         price: validated.price.replace(/[^0-9.]/g, ''),
         location: validated.location,
         beds: validated.beds ? parseInt(validated.beds) : null,
-        baths: validated.baths ? parseFloat(validated.baths) : null,
+        baths: validated.baths ? validated.baths : null,
         parking: validated.parking ? parseInt(validated.parking) : null,
         areaSqft: validated.sqft ? validated.sqft.replace(/[^0-9.]/g, '') : null,
         description: validated.description || null,
         amenities: validated.amenities.length > 0 ? validated.amenities : null,
+        externalLinks: validated.externalLinks.length > 0 ? validated.externalLinks : null,
         updatedAt: new Date(),
       })
       .where(eq(properties.id, id));

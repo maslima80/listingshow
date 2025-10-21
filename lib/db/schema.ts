@@ -89,6 +89,7 @@ export const properties = pgTable('properties', {
   areaSqm: numeric('area_sqm', { precision: 10, scale: 2 }),
   areaSqft: numeric('area_sqft', { precision: 10, scale: 2 }),
   amenities: text('amenities').array(),
+  externalLinks: jsonb('external_links'),
   status: propertyStatusEnum('status').default('draft').notNull(),
   coverAssetId: uuid('cover_asset_id'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),

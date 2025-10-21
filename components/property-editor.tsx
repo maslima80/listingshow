@@ -24,7 +24,8 @@ import {
   Check,
   Loader2,
   X,
-  Save
+  Save,
+  Globe
 } from "lucide-react";
 
 interface Agent {
@@ -124,6 +125,9 @@ export function PropertyEditor({
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>(initialData.amenities);
   const [selectedAgents, setSelectedAgents] = useState<string[]>(initialData.agentIds);
   const [customAmenity, setCustomAmenity] = useState("");
+  const [externalLinks, setExternalLinks] = useState<{ label: string; url: string; }[]>([]);
+  const [newLinkLabel, setNewLinkLabel] = useState("");
+  const [newLinkUrl, setNewLinkUrl] = useState("");
   
   const [formData, setFormData] = useState(initialData);
 
@@ -268,6 +272,7 @@ export function PropertyEditor({
       data.append("description", formData.description);
       data.append("amenities", JSON.stringify(selectedAmenities));
       data.append("agentIds", JSON.stringify(selectedAgents));
+      data.append("externalLinks", JSON.stringify(externalLinks));
       
       // Add hero media ID
       const heroMedia = mediaFiles.find(m => m.isHero);
@@ -736,6 +741,77 @@ export function PropertyEditor({
             rows={6}
             className="resize-none"
           />
+        </CardContent>
+      </Card>
+
+      {/* External Links */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Globe className="w-5 h-5" />
+            Also Listed On
+          </CardTitle>
+          <CardDescription>
+            Add links to other platforms (Zillow, Realtor.com, MLS, etc.)
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Add New Link Form */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <Input
+              placeholder="Platform (e.g., Zillow)"
+              value={newLinkLabel}
+              onChange={(e) => setNewLinkLabel(e.target.value)}
+            />
+            <Input
+              placeholder="https://..."
+              value={newLinkUrl}
+              onChange={(e) => setNewLinkUrl(e.target.value)}
+              className="md:col-span-2"
+            />
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (newLinkLabel && newLinkUrl) {
+                setExternalLinks([...externalLinks, { label: newLinkLabel, url: newLinkUrl }]);
+                setNewLinkLabel("");
+                setNewLinkUrl("");
+              }
+            }}
+            disabled={!newLinkLabel || !newLinkUrl}
+          >
+            <Check className="w-4 h-4 mr-2" />
+            Add Link
+          </Button>
+
+          {/* Existing Links */}
+          {externalLinks.length > 0 && (
+            <div className="space-y-2 pt-4 border-t">
+              {externalLinks.map((link, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <Globe className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm">{link.label}</div>
+                      <div className="text-xs text-muted-foreground truncate">{link.url}</div>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setExternalLinks(externalLinks.filter((_, i) => i !== index))}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
