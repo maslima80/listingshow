@@ -28,7 +28,7 @@ export function VideoChapters({ chapters, onChapterClick, accentColor }: VideoCh
       <div className="container mx-auto max-w-6xl px-4 sm:px-6">
         {/* Section Header */}
         <div className="mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-2">The Series</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-2">Video Tour</h2>
           <p className="text-muted-foreground">Tap any chapter to watch</p>
         </div>
 

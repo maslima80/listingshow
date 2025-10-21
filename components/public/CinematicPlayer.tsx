@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { X, Info, Bed, Bath, Maximize } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { formatBathrooms } from "@/lib/utils/formatBathrooms";
 
 interface VideoChapter {
   id: string;
@@ -138,7 +139,7 @@ export function CinematicPlayer({
           return (
             <video
               key={chapter.id}
-              ref={el => videoRefs.current[index] = el}
+              ref={el => { videoRefs.current[index] = el; }}
               src={chapter.playbackUrl}
               className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-300 ${
                 index === currentIndex ? 'opacity-100' : 'opacity-0'
@@ -197,13 +198,13 @@ export function CinematicPlayer({
                 {beds && (
                   <div className="flex items-center gap-2">
                     <Bed className="w-4 h-4" style={{ color: accentColor }} />
-                    <span>{beds} Beds</span>
+                    <span>{beds} Bed{beds === 1 ? '' : 's'}</span>
                   </div>
                 )}
                 {baths && (
                   <div className="flex items-center gap-2">
                     <Bath className="w-4 h-4" style={{ color: accentColor }} />
-                    <span>{baths} Baths</span>
+                    <span>{formatBathrooms(baths)}</span>
                   </div>
                 )}
                 {areaSqft && (

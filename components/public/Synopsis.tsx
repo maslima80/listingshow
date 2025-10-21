@@ -20,17 +20,17 @@ export function Synopsis({ description, highlights, accentColor }: SynopsisProps
           {/* About Section */}
           {description && (
             <div className="mb-8">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-4">About This Home</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-4">About This Property</h2>
               <p className="text-base sm:text-lg text-muted-foreground leading-relaxed whitespace-pre-wrap">
                 {description}
               </p>
             </div>
           )}
 
-          {/* Key Features */}
+          {/* Highlights */}
           {highlights && highlights.length > 0 && (
             <div>
-              <h3 className="text-xl sm:text-2xl font-bold mb-4">Key Features</h3>
+              <h3 className="text-xl sm:text-2xl font-bold mb-4">Highlights</h3>
               <div className="flex flex-wrap gap-2">
                 {highlights.map((highlight, index) => (
                   <Badge

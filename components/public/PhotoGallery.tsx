@@ -17,7 +17,7 @@ export function PhotoGallery({ photos }: PhotoGalleryProps) {
       <div className="container mx-auto max-w-6xl px-4 sm:px-6">
         {/* Section Header */}
         <div className="mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold">Gallery</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold">Photo Gallery</h2>
         </div>
 
         {/* Photo Grid */}

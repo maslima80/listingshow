@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { MapPin, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { formatBathrooms } from "@/lib/utils/formatBathrooms";
 
 interface HeroMediaProps {
   heroPhoto: string;
@@ -99,8 +100,8 @@ export function HeroMedia({
 
   // Build inline facts string
   const facts = [
-    beds ? `${beds} Beds` : null,
-    baths ? `${baths} Baths` : null,
+    beds ? `${beds} Bed${beds === 1 ? '' : 's'}` : null,
+    baths ? formatBathrooms(baths) : null,
     areaSqft ? `${parseFloat(areaSqft).toLocaleString()} Sq Ft` : null,
   ].filter(Boolean).join(' · ');
 

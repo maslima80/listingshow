@@ -42,7 +42,7 @@ export function EndCredits({ agents, propertyTitle, accentColor, onShare }: EndC
           <div className="lg:col-span-2 space-y-6">
             {/* Section Header */}
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold mb-2">Get in Touch</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-2">Contact Agent</h2>
               <p className="text-muted-foreground">
                 Contact us to schedule a showing or learn more
               </p>
