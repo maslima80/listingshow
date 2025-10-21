@@ -378,7 +378,7 @@ export function PropertyEditor({
                     onDragEnd={handleDragEnd}
                   >
                     <div
-                      className={`relative aspect-video rounded-lg overflow-hidden border-2 cursor-move ${
+                      className={`relative aspect-[2/3] rounded-lg overflow-hidden border-2 cursor-move ${
                         media.isHero ? "border-primary ring-2 ring-primary/20" : "border-border"
                       } ${draggedItem === media.id ? "opacity-50" : ""}`}
                     >
@@ -451,7 +451,7 @@ export function PropertyEditor({
                 {mediaFiles.filter(m => m.type === "photo").map(media => (
                   <div key={media.id} className="space-y-2">
                     <div
-                      className={`relative aspect-video rounded-lg overflow-hidden border-2 ${
+                      className={`relative aspect-square rounded-lg overflow-hidden border-2 ${
                         media.isHero ? "border-primary ring-2 ring-primary/20" : "border-border"
                       }`}
                     >
@@ -548,8 +548,16 @@ export function PropertyEditor({
               <Input
                 id="price"
                 value={formData.price}
-                onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-                placeholder="2,500,000"
+                onChange={(e) => {
+                  // Remove all non-numeric characters except decimal point
+                  const value = e.target.value.replace(/[^0-9.]/g, '');
+                  // Format with thousand separators
+                  const parts = value.split('.');
+                  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                  const formatted = parts.join('.');
+                  setFormData(prev => ({ ...prev, price: formatted }));
+                }}
+                placeholder="299,900"
               />
             </div>
 
@@ -577,6 +585,7 @@ export function PropertyEditor({
               <Input
                 id="beds"
                 type="number"
+                lang="en-US"
                 value={formData.beds}
                 onChange={(e) => setFormData(prev => ({ ...prev, beds: e.target.value }))}
                 placeholder="3"
@@ -608,6 +617,7 @@ export function PropertyEditor({
               <Input
                 id="parking"
                 type="number"
+                lang="en-US"
                 value={formData.parking}
                 onChange={(e) => setFormData(prev => ({ ...prev, parking: e.target.value }))}
                 placeholder="2"
@@ -622,6 +632,7 @@ export function PropertyEditor({
               <Input
                 id="sqft"
                 type="number"
+                lang="en-US"
                 value={formData.sqft}
                 onChange={(e) => setFormData(prev => ({ ...prev, sqft: e.target.value }))}
                 placeholder="2500"
