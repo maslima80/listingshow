@@ -6,6 +6,7 @@ import { properties, mediaAssets, propertyAgents } from "@/lib/db/schema";
 import { authOptions } from "@/lib/auth";
 import { eq, and, notInArray } from "drizzle-orm";
 import { uploadToImageKit } from "@/lib/imagekit";
+import { uploadToBunny } from "@/lib/bunny";
 
 const updatePropertySchema = z.object({
   name: z.string().min(1, "Property name is required"),
@@ -154,8 +155,9 @@ export async function PUT(
       const isVideo = file.type.startsWith("video/");
       
       let uploadedUrl: string;
+      let bunnyVideoId: string | null = null;
       
-      // Upload to ImageKit for photos, keep local for videos (for now)
+      // Upload to ImageKit for photos, Bunny.net for videos
       if (!isVideo) {
         try {
           const bytes = await file.arrayBuffer();
@@ -174,8 +176,24 @@ export async function PUT(
           uploadedUrl = `/uploads/properties/${file.name}`;
         }
       } else {
-        // For videos, keep using local storage for now (will use Bunny.net later)
-        uploadedUrl = `/uploads/properties/${file.name}`;
+        // Upload videos to Bunny.net
+        try {
+          const bytes = await file.arrayBuffer();
+          const buffer = Buffer.from(bytes);
+          
+          const result = await uploadToBunny(
+            buffer,
+            mediaTitle || file.name,
+            id
+          );
+          
+          uploadedUrl = result.streamUrl;
+          bunnyVideoId = result.videoId;
+        } catch (error) {
+          console.error('Bunny.net upload failed:', error);
+          // Fallback to local storage if Bunny.net fails
+          uploadedUrl = `/uploads/properties/${file.name}`;
+        }
       }
       
       // Create media asset record
