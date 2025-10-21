@@ -53,6 +53,14 @@ export async function uploadToBunny(
     }
 
     // Step 1: Create video object
+    const videoPayload: any = { title };
+    
+    // Only include collectionId if it's provided and valid
+    // For now, we'll skip collections to avoid errors
+    // if (collectionId) {
+    //   videoPayload.collectionId = collectionId;
+    // }
+    
     const createResponse = await fetch(
       `https://video.bunnycdn.com/library/${BUNNY_LIBRARY_ID}/videos`,
       {
@@ -61,10 +69,7 @@ export async function uploadToBunny(
           'AccessKey': BUNNY_STREAM_API_KEY,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          title,
-          collectionId: collectionId || '',
-        }),
+        body: JSON.stringify(videoPayload),
       }
     );
 
