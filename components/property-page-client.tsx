@@ -117,60 +117,80 @@ export function PropertyPageClient({ property, media, agents, accentColor }: Pro
 
   return (
     <>
-      <div className="container mx-auto max-w-6xl px-4 py-8">
-        {/* Quick Stats */}
-        <Card className="mb-8 dark:bg-zinc-900 dark:border-zinc-800">
-          <CardContent className="p-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      {/* Floating Stats Card - Glassmorphism */}
+      <div className="relative -mt-6 sm:-mt-8 mb-8 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <div 
+            className="backdrop-blur-xl bg-white/80 dark:bg-zinc-900/80 rounded-2xl shadow-2xl border border-white/20 dark:border-zinc-800/50 p-4 sm:p-6"
+            style={{
+              boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+            }}
+          >
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
               {property.beds && (
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: `${accentColor}15` }}>
-                    <Bed className="w-6 h-6" style={{ color: accentColor }} />
+                  <div 
+                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0" 
+                    style={{ backgroundColor: `${accentColor}20` }}
+                  >
+                    <Bed className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: accentColor }} />
                   </div>
-                  <div>
-                    <div className="text-2xl font-bold">{property.beds}</div>
-                    <div className="text-sm text-muted-foreground">Beds</div>
+                  <div className="min-w-0">
+                    <div className="text-2xl sm:text-3xl font-bold leading-none">{property.beds}</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground mt-0.5">Beds</div>
                   </div>
                 </div>
               )}
               {property.baths && (
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: `${accentColor}15` }}>
-                    <Bath className="w-6 h-6" style={{ color: accentColor }} />
+                  <div 
+                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0" 
+                    style={{ backgroundColor: `${accentColor}20` }}
+                  >
+                    <Bath className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: accentColor }} />
                   </div>
-                  <div>
-                    <div className="text-2xl font-bold">{property.baths}</div>
-                    <div className="text-sm text-muted-foreground">Baths</div>
+                  <div className="min-w-0">
+                    <div className="text-2xl sm:text-3xl font-bold leading-none">{property.baths}</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground mt-0.5">Baths</div>
                   </div>
                 </div>
               )}
               {property.parking && (
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: `${accentColor}15` }}>
-                    <Car className="w-6 h-6" style={{ color: accentColor }} />
+                  <div 
+                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0" 
+                    style={{ backgroundColor: `${accentColor}20` }}
+                  >
+                    <Car className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: accentColor }} />
                   </div>
-                  <div>
-                    <div className="text-2xl font-bold">{property.parking}</div>
-                    <div className="text-sm text-muted-foreground">Parking</div>
+                  <div className="min-w-0">
+                    <div className="text-2xl sm:text-3xl font-bold leading-none">{property.parking}</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground mt-0.5">Parking</div>
                   </div>
                 </div>
               )}
               {property.areaSqft && (
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: `${accentColor}15` }}>
-                    <Maximize className="w-6 h-6" style={{ color: accentColor }} />
+                  <div 
+                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0" 
+                    style={{ backgroundColor: `${accentColor}20` }}
+                  >
+                    <Maximize className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: accentColor }} />
                   </div>
-                  <div>
-                    <div className="text-2xl font-bold">
+                  <div className="min-w-0">
+                    <div className="text-2xl sm:text-3xl font-bold leading-none">
                       {parseFloat(property.areaSqft).toLocaleString()}
                     </div>
-                    <div className="text-sm text-muted-foreground">Sq Ft</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground mt-0.5">Sq Ft</div>
                   </div>
                 </div>
               )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto max-w-6xl px-4 py-8">
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
