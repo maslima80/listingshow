@@ -167,6 +167,19 @@ export async function POST(request: NextRequest) {
           .set({ coverAssetId: mediaAsset.id })
           .where(eq(properties.id, property.id));
       }
+
+      // Schedule automatic duration update for videos (if duration is 0)
+      if (isVideo && bunnyVideoId && (!durationSec || durationSec === 0)) {
+        // Trigger background job to poll for duration
+        fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/videos/poll-duration`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            videoId: bunnyVideoId,
+            mediaAssetId: mediaAsset.id,
+          }),
+        }).catch(err => console.error('Failed to start duration polling:', err));
+      }
     }
 
     // Link agents to property
