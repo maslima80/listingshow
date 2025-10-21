@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { HeroMedia } from "./HeroMedia";
 import { HostCard } from "./HostCard";
 import { VideoChapters } from "./VideoChapters";
@@ -88,7 +88,9 @@ export function CinematicPropertyPage({
 }: CinematicPropertyPageProps) {
   const [playerOpen, setPlayerOpen] = useState(false);
   const [playerIndex, setPlayerIndex] = useState(0);
+  const [showFloatingButton, setShowFloatingButton] = useState(false);
   const contactRef = useRef<HTMLDivElement>(null);
+  const heroRef = useRef<HTMLDivElement>(null);
 
   const handleWatchFilm = () => {
     setPlayerIndex(0);
@@ -124,6 +126,20 @@ export function CinematicPropertyPage({
       console.error('Share failed:', err);
     }
   };
+
+  // Show floating button after scrolling past hero + host sections
+  useEffect(() => {
+    const handleScroll = () => {
+      // Show button after scrolling ~120vh (hero + host section)
+      const scrollPosition = window.scrollY;
+      const threshold = window.innerHeight * 1.2; // 120vh
+      
+      setShowFloatingButton(scrollPosition > threshold);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <>
@@ -199,15 +215,16 @@ export function CinematicPropertyPage({
         />
       </div>
 
-      {/* Floating Schedule Tour Button (Mobile) */}
-      {videoChapters.length > 0 && (
+      {/* Floating Contact Agent Button (Mobile) - Shows after scrolling */}
+      {videoChapters.length > 0 && showFloatingButton && (
         <button
           onClick={handleScheduleTour}
-          className="fixed bottom-6 right-6 lg:hidden w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-white font-bold z-40 hover:scale-110 transition-transform"
+          className="fixed bottom-6 right-6 lg:hidden px-5 py-3 rounded-full shadow-2xl flex items-center gap-2 text-white font-semibold text-sm z-40 hover:scale-105 transition-all animate-in slide-in-from-bottom duration-300"
           style={{ backgroundColor: accentColor }}
-          aria-label="Schedule Tour"
+          aria-label="Contact Agent"
         >
-          📅
+          <span>📞</span>
+          <span>Contact Agent</span>
         </button>
       )}
     </>
