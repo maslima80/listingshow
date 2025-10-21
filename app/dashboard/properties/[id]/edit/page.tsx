@@ -111,6 +111,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
               type: m.type as "video" | "photo",
               isHero: m.id === property.coverAssetId,
               title: m.label || undefined,
+              providerId: m.providerId || undefined,
             }))}
             agents={agents.map(a => ({
               id: a.id,

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { VideoThumbnailSelector } from "@/components/video-thumbnail-selector";
 import { 
   Upload, 
   Video, 
@@ -42,6 +43,7 @@ interface ExistingMedia {
   type: "video" | "photo";
   isHero: boolean;
   title?: string;
+  providerId?: string;
 }
 
 interface PropertyEditorProps {
@@ -76,6 +78,7 @@ interface MediaFile {
   isHero: boolean;
   title?: string;
   isExisting: boolean;
+  providerId?: string;
 }
 
 const AMENITY_TAGS = [
@@ -123,6 +126,7 @@ export function PropertyEditor({
       isHero: m.isHero,
       title: m.title,
       isExisting: true,
+      providerId: m.providerId,
     }))
   );
   
@@ -169,13 +173,22 @@ export function PropertyEditor({
   };
 
   const removeMedia = (id: string) => {
-    setMediaFiles(prev => {
-      const filtered = prev.filter(m => m.id !== id);
-      if (filtered.length > 0 && !filtered.some(m => m.isHero)) {
-        filtered[0].isHero = true;
+    setMediaFiles(prev => prev.filter(m => m.id !== id));
+    if (mediaFiles.find(m => m.id === id)?.isHero) {
+      // If removing hero, set first remaining media as hero
+      const remaining = mediaFiles.filter(m => m.id !== id);
+      if (remaining.length > 0) {
+        setMediaFiles(prev => prev.map(m => 
+          m.id === remaining[0].id ? { ...m, isHero: true } : m
+        ));
       }
-      return filtered;
-    });
+    }
+  };
+
+  const handleThumbnailChange = (mediaId: string, newThumbnailUrl: string) => {
+    setMediaFiles(prev => prev.map(m => 
+      m.id === mediaId ? { ...m, thumbUrl: newThumbnailUrl, preview: newThumbnailUrl } : m
+    ));
   };
 
   const updateMediaTitle = (id: string, title: string) => {
@@ -452,6 +465,16 @@ export function PropertyEditor({
                       onChange={(e) => updateMediaTitle(media.id, e.target.value)}
                       className="text-sm"
                     />
+                    
+                    {/* Thumbnail Selector - Only for existing Bunny videos */}
+                    {media.isExisting && media.providerId && (
+                      <VideoThumbnailSelector
+                        videoId={media.providerId}
+                        currentThumbnailUrl={media.thumbUrl || ""}
+                        mediaAssetId={media.id}
+                        onThumbnailChange={(newUrl) => handleThumbnailChange(media.id, newUrl)}
+                      />
+                    )}
                   </div>
                 ))}
               </div>
