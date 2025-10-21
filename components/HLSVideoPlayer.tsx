@@ -32,10 +32,18 @@ export function HLSVideoPlayer({
 
     console.log('HLSVideoPlayer: Loading video from:', src);
 
+    // Check if this is a Bunny.net iframe embed URL
+    const isBunnyEmbed = src.includes('iframe.mediadelivery.net/embed');
+    
     // Check if the source is an HLS stream
     const isHLS = src.includes('.m3u8');
 
-    if (isHLS) {
+    if (isBunnyEmbed) {
+      // For Bunny.net iframe embeds, we need to use an iframe instead of video tag
+      // This will be handled by the parent component
+      console.log('Bunny.net iframe embed detected');
+      return;
+    } else if (isHLS) {
       // For HLS streams, we need hls.js (except on Safari which supports HLS natively)
       if (video.canPlayType('application/vnd.apple.mpegurl')) {
         // Native HLS support (Safari)
@@ -138,6 +146,22 @@ export function HLSVideoPlayer({
           <div className="text-sm text-white/70 max-w-md">{error}</div>
         </div>
       </div>
+    );
+  }
+
+  // Check if this is a Bunny.net iframe embed
+  const isBunnyEmbed = src.includes('iframe.mediadelivery.net/embed');
+
+  if (isBunnyEmbed) {
+    return (
+      <iframe
+        src={src}
+        className={className}
+        loading="lazy"
+        style={{ border: 'none', width: '100%', height: '100%' }}
+        allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+        allowFullScreen
+      />
     );
   }
 

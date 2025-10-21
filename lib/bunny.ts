@@ -111,16 +111,16 @@ export async function uploadToBunny(
       console.error('Failed to fetch video details, using fallback URLs');
       // Fallback to constructed URLs
       const thumbnailUrl = `https://${BUNNY_CDN_HOSTNAME}/${videoId}/thumbnail.jpg`;
-      const streamUrl = `https://${BUNNY_CDN_HOSTNAME}/${videoId}/playlist.m3u8`;
+      const streamUrl = `https://iframe.mediadelivery.net/embed/${BUNNY_LIBRARY_ID}/${videoId}?autoplay=true&preload=true`;
       return { videoId, thumbnailUrl, streamUrl };
     }
 
     const details = await detailsResponse.json();
     
-    // Use the actual URLs from Bunny.net
-    // Bunny.net provides the video in iframe format, but we need the direct stream URL
+    // Use Bunny.net Stream's iframe embed URL for public videos
+    // This URL works without authentication and handles HLS streaming internally
     const thumbnailUrl = `https://${BUNNY_CDN_HOSTNAME}/${videoId}/thumbnail.jpg`;
-    const streamUrl = `https://${BUNNY_CDN_HOSTNAME}/${videoId}/playlist.m3u8`;
+    const streamUrl = `https://iframe.mediadelivery.net/embed/${BUNNY_LIBRARY_ID}/${videoId}?autoplay=true&preload=true`;
     
     console.log('Bunny.net video uploaded:', {
       videoId,
@@ -216,15 +216,15 @@ export function getBunnyPlayerUrl(videoId: string): string {
 }
 
 /**
- * Generate Bunny.net HLS stream URL
+ * Generate Bunny.net stream URL (iframe embed)
  * @param videoId - Bunny.net video GUID
  */
 export function getBunnyStreamUrl(videoId: string): string {
-  if (!BUNNY_CDN_HOSTNAME) {
-    console.warn('Bunny.net CDN hostname not configured');
+  if (!BUNNY_LIBRARY_ID) {
+    console.warn('Bunny.net Library ID not configured');
     return '';
   }
-  return `https://${BUNNY_CDN_HOSTNAME}/${videoId}/playlist.m3u8`;
+  return `https://iframe.mediadelivery.net/embed/${BUNNY_LIBRARY_ID}/${videoId}?autoplay=true&preload=true`;
 }
 
 /**

@@ -136,6 +136,24 @@ export function CinematicPlayer({
           const isVisible = Math.abs(index - currentIndex) <= 1;
           if (!isVisible) return null;
 
+          // Check if this is a Bunny.net iframe embed
+          const isBunnyEmbed = chapter.playbackUrl.includes('iframe.mediadelivery.net/embed');
+
+          if (isBunnyEmbed) {
+            return (
+              <iframe
+                key={chapter.id}
+                src={chapter.playbackUrl}
+                className={`absolute inset-0 w-full h-full transition-opacity duration-300 ${
+                  index === currentIndex ? 'opacity-100' : 'opacity-0'
+                }`}
+                style={{ border: 'none' }}
+                allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                allowFullScreen
+              />
+            );
+          }
+
           return (
             <video
               key={chapter.id}
