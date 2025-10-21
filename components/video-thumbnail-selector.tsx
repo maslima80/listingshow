@@ -73,7 +73,7 @@ export function VideoThumbnailSelector({
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Select Video Thumbnail</DialogTitle>
             <DialogDescription>
@@ -81,19 +81,19 @@ export function VideoThumbnailSelector({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 py-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 py-4">
             {thumbnailOptions.map((option) => (
               <button
                 key={option.url}
                 onClick={() => setSelectedUrl(option.url)}
-                className={`relative group rounded-lg overflow-hidden border-2 transition-all ${
+                className={`relative group rounded-lg overflow-hidden border-3 transition-all ${
                   selectedUrl === option.url
-                    ? 'border-primary ring-2 ring-primary/20'
-                    : 'border-border hover:border-primary/50'
+                    ? 'border-primary ring-4 ring-primary/20 shadow-lg'
+                    : 'border-border hover:border-primary/50 hover:shadow-md'
                 }`}
               >
-                {/* Thumbnail Image */}
-                <div className="aspect-video bg-muted">
+                {/* Thumbnail Image - Portrait 9:16 ratio for vertical videos */}
+                <div className="aspect-[9/16] bg-muted">
                   <img
                     src={option.url}
                     alt={`Thumbnail at ${option.timestamp}`}
@@ -105,16 +105,16 @@ export function VideoThumbnailSelector({
                 {/* Selected Indicator */}
                 {selectedUrl === option.url && (
                   <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
-                    <div className="bg-primary text-primary-foreground rounded-full p-2">
-                      <Check className="w-5 h-5" />
+                    <div className="bg-primary text-primary-foreground rounded-full p-3">
+                      <Check className="w-8 h-8" />
                     </div>
                   </div>
                 )}
 
                 {/* Label */}
-                <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm px-2 py-1">
-                  <p className="text-xs text-white font-medium">{option.label}</p>
-                  <p className="text-xs text-white/70">{option.timestamp}</p>
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent px-4 py-3">
+                  <p className="text-sm text-white font-semibold">{option.label}</p>
+                  <p className="text-sm text-white/80">{option.timestamp}</p>
                 </div>
               </button>
             ))}
