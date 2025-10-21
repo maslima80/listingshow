@@ -1,6 +1,6 @@
 "use client";
 
-import { User, Mail, Phone, Share2, Instagram, Facebook, Linkedin, Globe } from "lucide-react";
+import { User, Mail, Phone, Share2, Instagram, Facebook, Linkedin, Globe, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ContactFormMock } from "./ContactFormMock";
 import { ExternalLinks } from "./ExternalLinks";
@@ -39,6 +39,11 @@ export function EndCredits({ agents, propertyTitle, accentColor, externalLinks, 
 
   const handleCall = (phone: string) => {
     window.location.href = `tel:${phone}`;
+  };
+
+  const handleWhatsApp = (phone: string) => {
+    const cleanNumber = phone.replace(/\D/g, '');
+    window.open(`https://wa.me/${cleanNumber}`, '_blank');
   };
 
   return (
@@ -177,6 +182,25 @@ export function EndCredits({ agents, propertyTitle, accentColor, externalLinks, 
                         >
                           <Phone className="w-4 h-4 mr-2" />
                           Call
+                        </Button>
+                      )}
+                      {agent.phone && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleWhatsApp(agent.phone!)}
+                          className="hover:text-white transition-colors"
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#25D366';
+                            e.currentTarget.style.borderColor = '#25D366';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '';
+                            e.currentTarget.style.borderColor = '';
+                          }}
+                        >
+                          <MessageCircle className="w-4 h-4 mr-2" />
+                          WhatsApp
                         </Button>
                       )}
                     </div>

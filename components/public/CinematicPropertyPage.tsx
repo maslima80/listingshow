@@ -178,6 +178,14 @@ export function CinematicPropertyPage({
           name={primaryAgent.name}
           title={primaryAgent.title}
           photoUrl={primaryAgent.photoUrl}
+          bio={primaryAgent.bio}
+          email={primaryAgent.email}
+          phone={primaryAgent.phone}
+          whatsapp={primaryAgent.phone} // Use phone as WhatsApp if available
+          instagram={primaryAgent.instagram}
+          facebook={primaryAgent.facebook}
+          linkedin={primaryAgent.linkedin}
+          website={primaryAgent.website}
           onScheduleTour={handleScheduleTour}
           accentColor={accentColor}
         />
@@ -231,16 +239,24 @@ export function CinematicPropertyPage({
         />
       </div>
 
-      {/* Floating Contact Agent Button (Mobile) - Shows after scrolling */}
+      {/* Floating Contact Button (Mobile) - Smart: Call if phone available, Contact otherwise */}
       {videoChapters.length > 0 && showFloatingButton && (
         <button
-          onClick={handleScheduleTour}
+          onClick={() => {
+            if (primaryAgent?.phone) {
+              // If phone available, call directly
+              window.location.href = `tel:${primaryAgent.phone}`;
+            } else {
+              // Otherwise scroll to contact form
+              handleScheduleTour();
+            }
+          }}
           className="fixed bottom-6 right-6 lg:hidden px-5 py-3 rounded-full shadow-2xl flex items-center gap-2 text-white font-semibold text-sm z-40 hover:scale-105 transition-all animate-in slide-in-from-bottom duration-300"
           style={{ backgroundColor: accentColor }}
-          aria-label="Contact Agent"
+          aria-label={primaryAgent?.phone ? "Call Agent" : "Contact Agent"}
         >
           <span>📞</span>
-          <span>Contact Agent</span>
+          <span>{primaryAgent?.phone ? "Call Agent" : "Contact Agent"}</span>
         </button>
       )}
     </>
