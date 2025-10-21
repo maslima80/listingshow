@@ -23,7 +23,8 @@ import {
   Sparkles,
   Check,
   Loader2,
-  X
+  X,
+  Globe
 } from "lucide-react";
 
 interface Agent {
@@ -78,6 +79,9 @@ export function PropertyCreator({ teamId, userId, agents }: PropertyCreatorProps
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [selectedAgents, setSelectedAgents] = useState<string[]>([]);
   const [customAmenity, setCustomAmenity] = useState("");
+  const [externalLinks, setExternalLinks] = useState<{ label: string; url: string; }[]>([]);
+  const [newLinkLabel, setNewLinkLabel] = useState("");
+  const [newLinkUrl, setNewLinkUrl] = useState("");
   
   const [formData, setFormData] = useState({
     name: "",
@@ -187,6 +191,7 @@ export function PropertyCreator({ teamId, userId, agents }: PropertyCreatorProps
       data.append("sqft", formData.sqft);
       data.append("description", formData.description);
       data.append("amenities", JSON.stringify(selectedAmenities));
+      data.append("externalLinks", JSON.stringify(externalLinks));
       data.append("agentIds", JSON.stringify(selectedAgents));
       
       // Add media files
@@ -273,7 +278,7 @@ export function PropertyCreator({ teamId, userId, agents }: PropertyCreatorProps
                 {mediaFiles.filter(m => m.type === "video").map(media => (
                   <div key={media.id} className="space-y-2">
                     <div
-                      className={`relative aspect-video rounded-lg overflow-hidden border-2 ${
+                      className={`relative aspect-[2/3] rounded-lg overflow-hidden border-2 ${
                         media.isHero ? "border-primary ring-2 ring-primary/20" : "border-border"
                       }`}
                     >
@@ -346,7 +351,7 @@ export function PropertyCreator({ teamId, userId, agents }: PropertyCreatorProps
                 {mediaFiles.filter(m => m.type === "image").map(media => (
                   <div key={media.id} className="space-y-2">
                     <div
-                      className={`relative aspect-video rounded-lg overflow-hidden border-2 ${
+                      className={`relative aspect-square rounded-lg overflow-hidden border-2 ${
                         media.isHero ? "border-primary ring-2 ring-primary/20" : "border-border"
                       }`}
                     >
@@ -600,6 +605,95 @@ export function PropertyCreator({ teamId, userId, agents }: PropertyCreatorProps
             rows={6}
             className="resize-none"
           />
+        </CardContent>
+      </Card>
+
+      {/* External Links */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Globe className="w-5 h-5" />
+            Also Listed On
+          </CardTitle>
+          <CardDescription>
+            Add links to other platforms (Zillow, Realtor.com, MLS, etc.)
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Quick Add Popular Platforms */}
+          <div>
+            <Label className="text-xs text-muted-foreground mb-2 block">Quick Add Popular Platforms</Label>
+            <div className="flex flex-wrap gap-2">
+              {["Zillow", "Realtor.com", "Redfin", "Trulia", "MLS"].map((platform) => (
+                <Button
+                  key={platform}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setNewLinkLabel(platform)}
+                  className="text-xs"
+                >
+                  {platform}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* Add New Link Form */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <Input
+              placeholder="Platform (e.g., Zillow)"
+              value={newLinkLabel}
+              onChange={(e) => setNewLinkLabel(e.target.value)}
+            />
+            <Input
+              placeholder="https://..."
+              value={newLinkUrl}
+              onChange={(e) => setNewLinkUrl(e.target.value)}
+              className="md:col-span-2"
+            />
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (newLinkLabel && newLinkUrl) {
+                setExternalLinks([...externalLinks, { label: newLinkLabel, url: newLinkUrl }]);
+                setNewLinkLabel("");
+                setNewLinkUrl("");
+              }
+            }}
+            disabled={!newLinkLabel || !newLinkUrl}
+          >
+            <Check className="w-4 h-4 mr-2" />
+            Add Link
+          </Button>
+
+          {/* Existing Links */}
+          {externalLinks.length > 0 && (
+            <div className="space-y-2 pt-4 border-t">
+              {externalLinks.map((link, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <Globe className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm">{link.label}</div>
+                      <div className="text-xs text-muted-foreground truncate">{link.url}</div>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setExternalLinks(externalLinks.filter((_, i) => i !== index))}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 

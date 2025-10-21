@@ -18,6 +18,7 @@ const createPropertySchema = z.object({
   sqft: z.string().optional(),
   description: z.string().optional(),
   amenities: z.array(z.string()).default([]),
+  externalLinks: z.array(z.object({ label: z.string(), url: z.string() })).default([]),
   agentIds: z.array(z.string()).default([]),
 });
 
@@ -46,6 +47,7 @@ export async function POST(request: NextRequest) {
       sqft: formData.get("sqft") as string,
       description: formData.get("description") as string,
       amenities: JSON.parse(formData.get("amenities") as string || "[]"),
+      externalLinks: JSON.parse(formData.get("externalLinks") as string || "[]"),
       agentIds: JSON.parse(formData.get("agentIds") as string || "[]"),
     };
 
@@ -74,6 +76,7 @@ export async function POST(request: NextRequest) {
         areaSqft: validated.sqft ? validated.sqft.replace(/[^0-9.]/g, '') : null,
         description: validated.description || null,
         amenities: validated.amenities.length > 0 ? validated.amenities : null,
+        externalLinks: validated.externalLinks.length > 0 ? validated.externalLinks : null,
         status: "published",
         publishedAt: new Date(),
       })
