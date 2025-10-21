@@ -107,6 +107,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
             existingMedia={media.map(m => ({
               id: m.id,
               url: m.url,
+              thumbUrl: m.thumbUrl || undefined,
               type: m.type as "video" | "photo",
               isHero: m.id === property.coverAssetId,
               title: m.label || undefined,

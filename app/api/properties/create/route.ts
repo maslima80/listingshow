@@ -97,6 +97,7 @@ export async function POST(request: NextRequest) {
       const isVideo = file.type.startsWith("video/");
       
       let uploadedUrl: string;
+      let thumbnailUrl: string | null = null;
       let bunnyVideoId: string | null = null;
       
       // Upload to ImageKit for photos, Bunny.net for videos
@@ -130,6 +131,7 @@ export async function POST(request: NextRequest) {
           );
           
           uploadedUrl = result.streamUrl;
+          thumbnailUrl = result.thumbnailUrl;
           bunnyVideoId = result.videoId;
         } catch (error) {
           console.error('Bunny.net upload failed:', error);
@@ -145,8 +147,11 @@ export async function POST(request: NextRequest) {
           propertyId: property.id,
           type: isVideo ? "video" : "photo",
           url: uploadedUrl,
+          thumbUrl: thumbnailUrl,
           label: mediaTitle || null,
           position: i,
+          provider: isVideo ? 'bunny' : 'imagekit',
+          providerId: bunnyVideoId,
         })
         .returning();
       

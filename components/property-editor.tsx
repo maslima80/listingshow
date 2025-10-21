@@ -38,6 +38,7 @@ interface Agent {
 interface ExistingMedia {
   id: string;
   url: string;
+  thumbUrl?: string;
   type: "video" | "photo";
   isHero: boolean;
   title?: string;
@@ -70,6 +71,7 @@ interface MediaFile {
   file?: File;
   url: string;
   preview: string;
+  thumbUrl?: string;
   type: "video" | "photo";
   isHero: boolean;
   title?: string;
@@ -115,7 +117,8 @@ export function PropertyEditor({
     existingMedia.map(m => ({
       id: m.id,
       url: m.url,
-      preview: m.url,
+      preview: m.thumbUrl || m.url, // Use thumbnail for videos
+      thumbUrl: m.thumbUrl,
       type: m.type,
       isHero: m.isHero,
       title: m.title,
@@ -388,10 +391,20 @@ export function PropertyEditor({
                         media.isHero ? "border-primary ring-2 ring-primary/20" : "border-border"
                       } ${draggedItem === media.id ? "opacity-50" : ""}`}
                     >
-                      <video
-                        src={media.preview}
-                        className="w-full h-full object-cover"
-                      />
+                      {media.thumbUrl ? (
+                        // Show Bunny.net thumbnail for uploaded videos
+                        <img
+                          src={media.thumbUrl}
+                          alt="Video thumbnail"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        // Show video preview for local files
+                        <video
+                          src={media.preview}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
                       
                       {/* Overlay */}
                       <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
