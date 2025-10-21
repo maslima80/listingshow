@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface HLSVideoPlayerProps {
   src: string;
@@ -10,6 +10,7 @@ interface HLSVideoPlayerProps {
   playsInline?: boolean;
   controlsList?: string;
   onLoadedMetadata?: () => void;
+  onError?: (error: string) => void;
 }
 
 export function HLSVideoPlayer({
@@ -20,8 +21,10 @@ export function HLSVideoPlayer({
   playsInline = true,
   controlsList,
   onLoadedMetadata,
+  onError,
 }: HLSVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -57,7 +60,10 @@ export function HLSVideoPlayer({
             if (data.fatal) {
               // Check if it's a 404 (video still encoding)
               if (data.response?.code === 404 || data.details === 'manifestLoadError') {
-                console.log('Video not ready yet (still encoding on Bunny.net)');
+                const errorMsg = 'Video is still processing. Please wait 1-5 minutes and refresh the page.';
+                console.log(errorMsg);
+                setError(errorMsg);
+                if (onError) onError(errorMsg);
                 hls.destroy();
                 return;
               }
@@ -73,7 +79,9 @@ export function HLSVideoPlayer({
                   hls.recoverMediaError();
                   break;
                 default:
-                  console.log('Cannot recover from error, destroying HLS instance');
+                  const generalError = 'Unable to play video. Please try again later.';
+                  setError(generalError);
+                  if (onError) onError(generalError);
                   hls.destroy();
                   break;
               }
@@ -118,6 +126,18 @@ export function HLSVideoPlayer({
       }
     }
   }, [src, autoPlay]);
+
+  if (error) {
+    return (
+      <div className={`${className} flex items-center justify-center bg-black/90 text-white p-8`}>
+        <div className="text-center space-y-4">
+          <div className="text-6xl">⏳</div>
+          <div className="text-lg font-semibold">Video Processing</div>
+          <div className="text-sm text-white/70 max-w-md">{error}</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <video
