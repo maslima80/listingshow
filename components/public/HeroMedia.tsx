@@ -57,7 +57,7 @@ export function HeroMedia({
 
   // DISABLED: Auto-preview feature
   // The Bunny iframe has autoplay restrictions that make this unreliable
-  // Better UX: Show clean hero image/thumbnail, let user click "Watch the Film"
+  // Better UX: Show clean hero image/thumbnail, let user click "Watch the Tour"
   
   // useEffect(() => {
   //   // Auto-preview logic would go here
@@ -98,13 +98,13 @@ export function HeroMedia({
       />
 
       {/* Video Preview - DISABLED (autoplay too unreliable) */}
-      {/* User clicks "Watch the Film" to start video */}
+      {/* User clicks "Watch the Tour" to start video */}
 
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
 
       {/* Content Overlay */}
-      <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-8 md:p-12">
+      <div className="absolute inset-0 flex flex-col justify-end p-6 pb-16 sm:p-8 md:p-12">
         <div className="max-w-6xl mx-auto w-full space-y-4">
           {/* Title */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight">
@@ -138,7 +138,7 @@ export function HeroMedia({
               onClick={onWatchFilm}
             >
               <Play className="w-5 h-5 mr-2 fill-current" />
-              Watch the Film
+              Watch the Tour
             </Button>
           </div>
         </div>
