@@ -52,7 +52,7 @@ export async function uploadToBunny(
       throw new Error('Bunny.net credentials not configured');
     }
 
-    // Step 1: Create video object
+    // Step 1: Create video object (make it public by default)
     const createResponse = await fetch(
       `https://video.bunnycdn.com/library/${BUNNY_LIBRARY_ID}/videos`,
       {
@@ -63,6 +63,7 @@ export async function uploadToBunny(
         },
         body: JSON.stringify({
           title: title,
+          isPublic: true, // Make video publicly accessible
         }),
       }
     );
@@ -95,9 +96,39 @@ export async function uploadToBunny(
       throw new Error(`Failed to upload video: ${errorText}`);
     }
 
-    // Generate URLs
+    // Step 3: Fetch video details to get actual playback URLs
+    const detailsResponse = await fetch(
+      `https://video.bunnycdn.com/library/${BUNNY_LIBRARY_ID}/videos/${videoId}`,
+      {
+        method: 'GET',
+        headers: {
+          'AccessKey': BUNNY_STREAM_API_KEY,
+        },
+      }
+    );
+
+    if (!detailsResponse.ok) {
+      console.error('Failed to fetch video details, using fallback URLs');
+      // Fallback to constructed URLs
+      const thumbnailUrl = `https://${BUNNY_CDN_HOSTNAME}/${videoId}/thumbnail.jpg`;
+      const streamUrl = `https://${BUNNY_CDN_HOSTNAME}/${videoId}/playlist.m3u8`;
+      return { videoId, thumbnailUrl, streamUrl };
+    }
+
+    const details = await detailsResponse.json();
+    
+    // Use the actual URLs from Bunny.net
+    // Bunny.net provides the video in iframe format, but we need the direct stream URL
     const thumbnailUrl = `https://${BUNNY_CDN_HOSTNAME}/${videoId}/thumbnail.jpg`;
     const streamUrl = `https://${BUNNY_CDN_HOSTNAME}/${videoId}/playlist.m3u8`;
+    
+    console.log('Bunny.net video uploaded:', {
+      videoId,
+      thumbnailUrl,
+      streamUrl,
+      status: details.status,
+      encodeProgress: details.encodeProgress
+    });
 
     return {
       videoId,

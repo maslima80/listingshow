@@ -30,6 +30,8 @@ export function HLSVideoPlayer({
     const video = videoRef.current;
     if (!video) return;
 
+    console.log('HLSVideoPlayer: Loading video from:', src);
+
     // Check if the source is an HLS stream
     const isHLS = src.includes('.m3u8');
 
