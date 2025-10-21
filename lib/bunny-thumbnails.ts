@@ -3,7 +3,8 @@
  * Bunny generates thumbnails at different timestamps automatically
  */
 
-const BUNNY_CDN_HOSTNAME = process.env.NEXT_PUBLIC_BUNNY_CDN_HOSTNAME;
+// Use the public env var since this runs on client-side
+const BUNNY_CDN_HOSTNAME = process.env.NEXT_PUBLIC_BUNNY_CDN_HOSTNAME || 'vz-f199acbb-b12.b-cdn.net';
 
 /**
  * Get available thumbnail URLs for a Bunny video
