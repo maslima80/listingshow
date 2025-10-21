@@ -84,7 +84,7 @@ export const properties = pgTable('properties', {
   price: numeric('price', { precision: 12, scale: 2 }),
   currency: varchar('currency', { length: 3 }).default('USD'),
   beds: integer('beds'),
-  baths: integer('baths'),
+  baths: numeric('baths', { precision: 3, scale: 1 }),
   parking: integer('parking'),
   areaSqm: numeric('area_sqm', { precision: 10, scale: 2 }),
   areaSqft: numeric('area_sqft', { precision: 10, scale: 2 }),

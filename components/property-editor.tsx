@@ -591,6 +591,9 @@ export function PropertyEditor({
               <Input
                 id="baths"
                 type="number"
+                step="0.5"
+                min="0"
+                lang="en-US"
                 value={formData.baths}
                 onChange={(e) => setFormData(prev => ({ ...prev, baths: e.target.value }))}
                 placeholder="2"

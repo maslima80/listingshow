@@ -27,7 +27,7 @@ const updatePropertySchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -39,13 +39,16 @@ export async function PUT(
       );
     }
 
+    // Await params (Next.js 15 requirement)
+    const { id } = await params;
+
     // Verify property ownership
     const [existingProperty] = await db
       .select()
       .from(properties)
       .where(
         and(
-          eq(properties.id, params.id),
+          eq(properties.id, id),
           eq(properties.teamId, session.user.teamId)
         )
       )
@@ -88,14 +91,14 @@ export async function PUT(
         price: validated.price.replace(/[^0-9.]/g, ''),
         location: validated.location,
         beds: validated.beds ? parseInt(validated.beds) : null,
-        baths: validated.baths ? parseInt(validated.baths) : null,
+        baths: validated.baths ? parseFloat(validated.baths) : null,
         parking: validated.parking ? parseInt(validated.parking) : null,
         areaSqft: validated.sqft ? validated.sqft.replace(/[^0-9.]/g, '') : null,
         description: validated.description || null,
         amenities: validated.amenities.length > 0 ? validated.amenities : null,
         updatedAt: new Date(),
       })
-      .where(eq(properties.id, params.id));
+      .where(eq(properties.id, id));
 
     // Update existing media titles
     for (const mediaTitle of validated.existingMediaTitles) {
@@ -112,7 +115,7 @@ export async function PUT(
         .from(mediaAssets)
         .where(
           and(
-            eq(mediaAssets.propertyId, params.id),
+            eq(mediaAssets.propertyId, id),
             notInArray(mediaAssets.id, validated.existingMediaIds)
           )
         );
@@ -133,7 +136,7 @@ export async function PUT(
           .delete(mediaAssets)
           .where(
             and(
-              eq(mediaAssets.propertyId, params.id),
+              eq(mediaAssets.propertyId, id),
               notInArray(mediaAssets.id, validated.existingMediaIds)
             )
           );
@@ -143,7 +146,7 @@ export async function PUT(
       const allMedia = await db
         .select()
         .from(mediaAssets)
-        .where(eq(mediaAssets.propertyId, params.id));
+        .where(eq(mediaAssets.propertyId, id));
 
       for (const media of allMedia) {
         try {
@@ -156,7 +159,7 @@ export async function PUT(
 
       await db
         .delete(mediaAssets)
-        .where(eq(mediaAssets.propertyId, params.id));
+        .where(eq(mediaAssets.propertyId, id));
     }
 
     // Process new media files
@@ -186,7 +189,7 @@ export async function PUT(
       const [mediaAsset] = await db
         .insert(mediaAssets)
         .values({
-          propertyId: params.id,
+          propertyId: id,
           type: file.type.startsWith("video/") ? "video" : "photo",
           url: `/uploads/properties/${filename}`,
           label: mediaTitle || null,
@@ -201,7 +204,7 @@ export async function PUT(
         await db
           .update(properties)
           .set({ coverAssetId: mediaAsset.id })
-          .where(eq(properties.id, params.id));
+          .where(eq(properties.id, id));
       }
     }
 
@@ -210,20 +213,20 @@ export async function PUT(
       await db
         .update(properties)
         .set({ coverAssetId: heroMediaId })
-        .where(eq(properties.id, params.id));
+        .where(eq(properties.id, id));
     }
 
     // Update agent assignments
     // Delete existing assignments
     await db
       .delete(propertyAgents)
-      .where(eq(propertyAgents.propertyId, params.id));
+      .where(eq(propertyAgents.propertyId, id));
 
     // Add new assignments
     if (validated.agentIds.length > 0) {
       await db.insert(propertyAgents).values(
         validated.agentIds.map((agentId, index) => ({
-          propertyId: params.id,
+          propertyId: id,
           agentProfileId: agentId,
           isPrimary: index === 0,
         }))

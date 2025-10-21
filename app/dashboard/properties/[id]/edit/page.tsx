@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-export default async function EditPropertyPage({ params }: { params: { id: string } }) {
+export default async function EditPropertyPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user) {
@@ -20,13 +20,16 @@ export default async function EditPropertyPage({ params }: { params: { id: strin
     redirect("/onboarding");
   }
 
+  // Await params (Next.js 15 requirement)
+  const { id } = await params;
+
   // Get property and verify ownership
   const [property] = await db
     .select()
     .from(properties)
     .where(
       and(
-        eq(properties.id, params.id),
+        eq(properties.id, id),
         eq(properties.teamId, session.user.teamId)
       )
     )
@@ -40,7 +43,7 @@ export default async function EditPropertyPage({ params }: { params: { id: strin
   const media = await db
     .select()
     .from(mediaAssets)
-    .where(eq(mediaAssets.propertyId, params.id))
+    .where(eq(mediaAssets.propertyId, id))
     .orderBy(mediaAssets.position);
 
   // Get assigned agents
@@ -50,7 +53,7 @@ export default async function EditPropertyPage({ params }: { params: { id: strin
       isPrimary: propertyAgents.isPrimary,
     })
     .from(propertyAgents)
-    .where(eq(propertyAgents.propertyId, params.id));
+    .where(eq(propertyAgents.propertyId, id));
 
   // Get all team agent profiles
   const agents = await db
