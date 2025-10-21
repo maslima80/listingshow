@@ -26,13 +26,14 @@ interface PropertyCardProps {
     price: string | null;
     location: string;
     beds: number | null;
-    baths: number | null;
+    baths: string | number | null;
     areaSqft: string | null;
     status: string;
   };
   coverMedia?: {
     url: string;
     type: string;
+    thumbUrl?: string | null;
   } | null;
 }
 
@@ -69,19 +70,11 @@ export function PropertyCard({ property, coverMedia }: PropertyCardProps) {
         {/* Property Image */}
         <div className="relative aspect-square overflow-hidden bg-slate-100">
           {coverMedia?.url ? (
-            coverMedia.type === 'video' ? (
-              <video
-                src={coverMedia.url}
-                className="w-full h-full object-cover"
-                muted
-              />
-            ) : (
-              <img
-                src={coverMedia.url}
-                alt={property.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-            )
+            <img
+              src={coverMedia.type === 'video' && coverMedia.thumbUrl ? coverMedia.thumbUrl : coverMedia.url}
+              alt={property.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-slate-400">
               <LayoutGrid className="w-12 h-12" />

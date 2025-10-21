@@ -22,7 +22,7 @@ export default async function DashboardPage() {
     redirect("/onboarding");
   }
 
-  // Fetch team properties
+  // Fetch team properties with cover media
   const teamProperties = await db
     .select({
       property: properties,
