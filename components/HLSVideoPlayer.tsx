@@ -55,6 +55,13 @@ export function HLSVideoPlayer({
 
           hls.on(Hls.Events.ERROR, (event: any, data: any) => {
             if (data.fatal) {
+              // Check if it's a 404 (video still encoding)
+              if (data.response?.code === 404 || data.details === 'manifestLoadError') {
+                console.log('Video not ready yet (still encoding on Bunny.net)');
+                hls.destroy();
+                return;
+              }
+              
               console.error('HLS fatal error:', data);
               switch (data.type) {
                 case Hls.ErrorTypes.NETWORK_ERROR:
