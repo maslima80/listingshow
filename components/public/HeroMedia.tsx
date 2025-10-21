@@ -55,48 +55,13 @@ export function HeroMedia({
     ? window.matchMedia('(prefers-reduced-data: reduce)').matches
     : false;
 
-  // Auto-preview logic: Play video preview once after delay
-  useEffect(() => {
-    // Skip if no video, already played, or user prefers reduced data
-    if (!previewVideoUrl || hasPlayedPreview || prefersReducedData) return;
-
-    // Wait longer for video to be ready (Bunny encoding)
-    const initialDelay = AUTOPLAY_DELAY + 1000; // Extra 1 second for encoding
-
-    // Start preview after delay
-    autoplayTimerRef.current = setTimeout(() => {
-      setShowVideo(true);
-      setHasPlayedPreview(true);
-
-      // Send play command to Bunny iframe after it loads
-      setTimeout(() => {
-        if (iframeRef.current?.contentWindow) {
-          iframeRef.current.contentWindow.postMessage(
-            JSON.stringify({ event: 'play' }),
-            '*'
-          );
-        }
-      }, 500); // Wait for iframe to load
-
-      // Stop preview after PREVIEW_DURATION
-      previewTimerRef.current = setTimeout(() => {
-        // Pause video before hiding
-        if (iframeRef.current?.contentWindow) {
-          iframeRef.current.contentWindow.postMessage(
-            JSON.stringify({ event: 'pause' }),
-            '*'
-          );
-        }
-        setShowVideo(false);
-      }, PREVIEW_DURATION);
-    }, initialDelay);
-
-    // Cleanup
-    return () => {
-      if (autoplayTimerRef.current) clearTimeout(autoplayTimerRef.current);
-      if (previewTimerRef.current) clearTimeout(previewTimerRef.current);
-    };
-  }, [previewVideoUrl, hasPlayedPreview, prefersReducedData]);
+  // DISABLED: Auto-preview feature
+  // The Bunny iframe has autoplay restrictions that make this unreliable
+  // Better UX: Show clean hero image/thumbnail, let user click "Watch the Film"
+  
+  // useEffect(() => {
+  //   // Auto-preview logic would go here
+  // }, [previewVideoUrl, hasPlayedPreview, prefersReducedData]);
 
   // Pause video when tab is not visible
   useEffect(() => {
@@ -132,25 +97,8 @@ export function HeroMedia({
         decoding="async"
       />
 
-      {/* Video Preview - Fades in after delay, plays for 5 seconds, then fades out */}
-      {previewVideoUrl && !prefersReducedData && (
-        <div 
-          className={`absolute inset-0 transition-opacity duration-1000 pointer-events-none ${
-            showVideo ? 'opacity-100' : 'opacity-0'
-          }`}
-          style={{ zIndex: showVideo ? 2 : 1 }}
-        >
-          <iframe
-            ref={iframeRef}
-            src={previewVideoUrl}
-            className="w-full h-full object-cover"
-            style={{ border: 'none', pointerEvents: 'none' }}
-            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-            allowFullScreen
-            title="Video Preview"
-          />
-        </div>
-      )}
+      {/* Video Preview - DISABLED (autoplay too unreliable) */}
+      {/* User clicks "Watch the Film" to start video */}
 
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />

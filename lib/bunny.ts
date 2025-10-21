@@ -46,7 +46,7 @@ export async function uploadToBunny(
   videoBuffer: Buffer,
   title: string,
   collectionId?: string
-): Promise<{ videoId: string; thumbnailUrl: string; streamUrl: string }> {
+): Promise<{ videoId: string; thumbnailUrl: string; streamUrl: string; hlsUrl: string }> {
   try {
     if (!BUNNY_STREAM_API_KEY || !BUNNY_LIBRARY_ID) {
       throw new Error('Bunny.net credentials not configured');
@@ -112,15 +112,16 @@ export async function uploadToBunny(
       // Fallback to constructed URLs
       const thumbnailUrl = `https://${BUNNY_CDN_HOSTNAME}/${videoId}/thumbnail.jpg`;
       const streamUrl = `https://iframe.mediadelivery.net/embed/${BUNNY_LIBRARY_ID}/${videoId}?autoplay=true&preload=true`;
-      return { videoId, thumbnailUrl, streamUrl };
+      const hlsUrl = `https://${BUNNY_CDN_HOSTNAME}/${videoId}/playlist.m3u8`;
+      return { videoId, thumbnailUrl, streamUrl, hlsUrl };
     }
 
     const details = await detailsResponse.json();
     
-    // Use Bunny.net Stream's iframe embed URL for public videos
-    // This URL works without authentication and handles HLS streaming internally
+    // Return both iframe URL (for fullscreen player) and HLS URL (for preview)
     const thumbnailUrl = `https://${BUNNY_CDN_HOSTNAME}/${videoId}/thumbnail.jpg`;
     const streamUrl = `https://iframe.mediadelivery.net/embed/${BUNNY_LIBRARY_ID}/${videoId}?autoplay=true&preload=true`;
+    const hlsUrl = `https://${BUNNY_CDN_HOSTNAME}/${videoId}/playlist.m3u8`;
     
     console.log('Bunny.net video uploaded:', {
       videoId,
@@ -134,6 +135,7 @@ export async function uploadToBunny(
       videoId,
       thumbnailUrl,
       streamUrl,
+      hlsUrl,
     };
   } catch (error) {
     console.error('Bunny.net upload error:', error);
