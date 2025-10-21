@@ -490,10 +490,18 @@ export function PropertyCreator({ teamId, userId, agents }: PropertyCreatorProps
               </Label>
               <Input
                 id="baths"
-                type="number"
+                type="text"
+                inputMode="decimal"
                 value={formData.baths}
-                onChange={(e) => setFormData(prev => ({ ...prev, baths: e.target.value }))}
-                placeholder="2"
+                onChange={(e) => {
+                  // Only allow numbers and single decimal point
+                  const value = e.target.value.replace(/[^0-9.]/g, '');
+                  // Ensure only one decimal point
+                  const parts = value.split('.');
+                  const formatted = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : value;
+                  setFormData(prev => ({ ...prev, baths: formatted }));
+                }}
+                placeholder="2.5"
               />
             </div>
 
