@@ -60,6 +60,9 @@ export function HeroMedia({
     // Skip if no video, already played, or user prefers reduced data
     if (!previewVideoUrl || hasPlayedPreview || prefersReducedData) return;
 
+    // Wait longer for video to be ready (Bunny encoding)
+    const initialDelay = AUTOPLAY_DELAY + 1000; // Extra 1 second for encoding
+
     // Start preview after delay
     autoplayTimerRef.current = setTimeout(() => {
       setShowVideo(true);
@@ -69,7 +72,7 @@ export function HeroMedia({
       previewTimerRef.current = setTimeout(() => {
         setShowVideo(false);
       }, PREVIEW_DURATION);
-    }, AUTOPLAY_DELAY);
+    }, initialDelay);
 
     // Cleanup
     return () => {
@@ -122,7 +125,7 @@ export function HeroMedia({
         >
           <iframe
             ref={iframeRef}
-            src={`${previewVideoUrl}&muted=1`}
+            src={previewVideoUrl}
             className="w-full h-full object-cover"
             style={{ border: 'none', pointerEvents: 'none' }}
             allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
