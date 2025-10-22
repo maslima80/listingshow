@@ -17,13 +17,17 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Eye, Trash2, LayoutGrid, Loader2, Edit } from "lucide-react";
+import { formatPriceDisplay, type ListingPurpose, type PriceVisibility } from "@/lib/property-types";
 
 interface PropertyCardProps {
   property: {
     id: string;
     slug: string;
     title: string;
+    listingPurpose: ListingPurpose;
+    priceVisibility: PriceVisibility;
     price: string | null;
+    rentPeriod: string | null;
     location: string;
     beds: number | null;
     baths: string | number | null;
@@ -92,9 +96,17 @@ export function PropertyCard({ property, coverMedia }: PropertyCardProps) {
         <CardHeader className="pb-3">
           <CardTitle className="line-clamp-1">{property.title}</CardTitle>
           <CardDescription className="flex items-center gap-1">
-            <span className="text-lg font-bold text-primary">
-              ${Number(property.price).toLocaleString()}
-            </span>
+            {property.listingPurpose === 'coming_soon' ? (
+              <Badge variant="secondary" className="text-sm">Coming soon</Badge>
+            ) : property.priceVisibility !== 'show' ? (
+              <span className="text-sm italic text-muted-foreground">
+                {formatPriceDisplay(property.listingPurpose, property.priceVisibility, property.price, property.rentPeriod)}
+              </span>
+            ) : (
+              <span className="text-lg font-bold text-primary">
+                {formatPriceDisplay(property.listingPurpose, property.priceVisibility, property.price, property.rentPeriod)}
+              </span>
+            )}
           </CardDescription>
         </CardHeader>
 
