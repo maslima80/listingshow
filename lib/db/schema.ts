@@ -95,6 +95,9 @@ export const properties = pgTable('properties', {
   parking: integer('parking'),
   areaSqm: numeric('area_sqm', { precision: 10, scale: 2 }),
   areaSqft: numeric('area_sqft', { precision: 10, scale: 2 }),
+  yearBuilt: integer('year_built'),
+  hoaDues: numeric('hoa_dues', { precision: 10, scale: 2 }),
+  hoaPeriod: varchar('hoa_period', { length: 20 }), // 'month', 'quarter', 'year'
   amenities: text('amenities').array(),
   externalLinks: jsonb('external_links'),
   status: propertyStatusEnum('status').default('draft').notNull(),

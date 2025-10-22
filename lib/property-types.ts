@@ -37,10 +37,17 @@ export const RENT_PERIODS = [
   { value: 'night', label: 'night' },
 ] as const;
 
+export const HOA_PERIODS = [
+  { value: 'month', label: 'month' },
+  { value: 'quarter', label: 'quarter' },
+  { value: 'year', label: 'year' },
+] as const;
+
 export type ListingPurpose = typeof LISTING_PURPOSES[number]['value'];
 export type PropertyType = typeof PROPERTY_TYPES[number]['value'];
 export type PriceVisibility = 'show' | 'upon_request' | 'contact';
 export type RentPeriod = typeof RENT_PERIODS[number]['value'];
+export type HoaPeriod = typeof HOA_PERIODS[number]['value'];
 
 /**
  * Format price display based on visibility settings

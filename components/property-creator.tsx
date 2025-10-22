@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { LISTING_PURPOSES, PROPERTY_TYPES, PRICE_VISIBILITY_OPTIONS, RENT_PERIODS, type ListingPurpose, type PriceVisibility } from "@/lib/property-types";
+import { LISTING_PURPOSES, PROPERTY_TYPES, PRICE_VISIBILITY_OPTIONS, RENT_PERIODS, HOA_PERIODS, type ListingPurpose, type PriceVisibility } from "@/lib/property-types";
 import { 
   Upload, 
   Video, 
@@ -99,8 +99,13 @@ export function PropertyCreator({ teamId, userId, agents }: PropertyCreatorProps
     baths: "",
     parking: "",
     sqft: "",
+    yearBuilt: "",
+    hoaDues: "",
+    hoaPeriod: "month" as string,
     description: "",
   });
+  
+  const [showHoa, setShowHoa] = useState(false);
 
   const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -219,6 +224,18 @@ export function PropertyCreator({ teamId, userId, agents }: PropertyCreatorProps
       data.append("baths", formData.baths);
       data.append("parking", formData.parking);
       data.append("sqft", formData.sqft);
+      
+      // Add year built if provided
+      if (formData.yearBuilt) {
+        data.append("yearBuilt", formData.yearBuilt);
+      }
+      
+      // Add HOA if enabled and provided
+      if (showHoa && formData.hoaDues) {
+        data.append("hoaDues", formData.hoaDues);
+        data.append("hoaPeriod", formData.hoaPeriod);
+      }
+      
       data.append("description", formData.description);
       data.append("amenities", JSON.stringify(selectedAmenities));
       data.append("externalLinks", JSON.stringify(externalLinks));
@@ -711,6 +728,69 @@ export function PropertyCreator({ teamId, userId, agents }: PropertyCreatorProps
                 onChange={(e) => setFormData(prev => ({ ...prev, sqft: e.target.value }))}
                 placeholder="2500"
               />
+            </div>
+          </div>
+
+          {/* Row 6: Year Built & HOA */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="yearBuilt">Year Built</Label>
+              <Input
+                id="yearBuilt"
+                type="number"
+                value={formData.yearBuilt}
+                onChange={(e) => setFormData(prev => ({ ...prev, yearBuilt: e.target.value }))}
+                placeholder="2020"
+                min="1800"
+                max={new Date().getFullYear() + 1}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between mb-2">
+                <Label>HOA</Label>
+                <Button
+                  type="button"
+                  variant={showHoa ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setShowHoa(!showHoa)}
+                >
+                  {showHoa ? "Enabled" : "Disabled"}
+                </Button>
+              </div>
+              
+              {showHoa && (
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="hoaDues" className="text-xs">HOA Dues</Label>
+                    <Input
+                      id="hoaDues"
+                      type="number"
+                      value={formData.hoaDues}
+                      onChange={(e) => setFormData(prev => ({ ...prev, hoaDues: e.target.value }))}
+                      placeholder="250"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="hoaPeriod" className="text-xs">Per</Label>
+                    <Select
+                      value={formData.hoaPeriod}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, hoaPeriod: value }))}
+                    >
+                      <SelectTrigger id="hoaPeriod">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {HOA_PERIODS.map((period) => (
+                          <SelectItem key={period.value} value={period.value}>
+                            {period.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
