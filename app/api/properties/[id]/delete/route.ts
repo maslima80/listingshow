@@ -4,8 +4,7 @@ import { db } from "@/lib/db";
 import { properties, mediaAssets } from "@/lib/db/schema";
 import { authOptions } from "@/lib/auth";
 import { eq, and } from "drizzle-orm";
-import { unlink } from "fs/promises";
-import { join } from "path";
+import { deleteFromBunny } from "@/lib/bunny";
 
 export async function DELETE(
   request: NextRequest,
@@ -40,20 +39,34 @@ export async function DELETE(
       );
     }
 
-    // Get all media assets to delete files
+    // Get all media assets to delete from Bunny.net
     const media = await db
       .select()
       .from(mediaAssets)
       .where(eq(mediaAssets.propertyId, params.id));
 
-    // Delete media files from disk
+    // Delete videos from Bunny.net
+    const deletionResults = {
+      total: media.length,
+      deleted: 0,
+      failed: 0,
+      errors: [] as string[],
+    };
+
     for (const item of media) {
-      try {
-        const filepath = join(process.cwd(), "public", item.url);
-        await unlink(filepath);
-      } catch (error) {
-        console.error(`Failed to delete file ${item.url}:`, error);
-        // Continue even if file deletion fails
+      // Only delete videos from Bunny (photos are stored locally or elsewhere)
+      if (item.type === 'video' && item.providerId) {
+        try {
+          await deleteFromBunny(item.providerId);
+          deletionResults.deleted++;
+          console.log(`✓ Deleted Bunny video: ${item.providerId}`);
+        } catch (error) {
+          deletionResults.failed++;
+          const errorMsg = `Failed to delete Bunny video ${item.providerId}: ${error instanceof Error ? error.message : String(error)}`;
+          deletionResults.errors.push(errorMsg);
+          console.error(errorMsg);
+          // Continue even if Bunny deletion fails - we still want to delete from DB
+        }
       }
     }
 
@@ -62,9 +75,17 @@ export async function DELETE(
       .delete(properties)
       .where(eq(properties.id, params.id));
 
+    console.log('Media deletion summary:', deletionResults);
+
     return NextResponse.json({
       success: true,
       message: "Property deleted successfully",
+      mediaDeletion: {
+        total: deletionResults.total,
+        deleted: deletionResults.deleted,
+        failed: deletionResults.failed,
+        ...(deletionResults.errors.length > 0 && { errors: deletionResults.errors }),
+      },
     });
   } catch (error) {
     console.error("Property deletion error:", error);
