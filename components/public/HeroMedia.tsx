@@ -105,32 +105,44 @@ export function HeroMedia({
 
       {/* Content Overlay */}
       <div className="absolute inset-0 flex flex-col justify-end p-6 pb-16 sm:p-8 md:p-12">
-        <div className="max-w-6xl mx-auto w-full space-y-4">
-          {/* Title */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight">
-            {title}
-          </h1>
+        <div className="max-w-6xl mx-auto w-full">
+          {/* GROUP 1: Identity (Title + Location) */}
+          <div className="space-y-2">
+            {/* Title */}
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight">
+              {title}
+            </h1>
 
-          {/* Location */}
-          <div className="flex items-center gap-2 text-white/90">
-            <MapPin className="w-5 h-5" />
-            <span className="text-lg sm:text-xl">{location}</span>
-          </div>
-
-          {/* Price */}
-          <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">
-            {price}
-          </div>
-
-          {/* Inline Facts */}
-          {facts && (
-            <div className="text-base sm:text-lg text-white/80">
-              {facts}
+            {/* Location */}
+            <div className="flex items-center gap-2 text-white/90">
+              <MapPin className="w-5 h-5" />
+              <span className="text-lg sm:text-xl">{location}</span>
             </div>
-          )}
+          </div>
+
+          {/* LARGE SPACE between groups */}
+          <div className="h-6" />
+
+          {/* GROUP 2: Data (Price + Stats) */}
+          <div className="space-y-2">
+            {/* Price */}
+            <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">
+              {price}
+            </div>
+
+            {/* Inline Facts */}
+            {facts && (
+              <div className="text-base sm:text-lg text-white/80">
+                {facts}
+              </div>
+            )}
+          </div>
+
+          {/* LARGE SPACE before CTA */}
+          <div className="h-6" />
 
           {/* CTA Button */}
-          <div className="pt-4">
+          <div>
             <Button
               size="lg"
               className="text-white font-semibold text-base sm:text-lg px-8 py-6 rounded-full shadow-2xl hover:scale-105 transition-transform"
