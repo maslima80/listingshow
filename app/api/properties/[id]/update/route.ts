@@ -70,7 +70,11 @@ export async function PUT(
     // Extract property data
     const propertyData = {
       name: formData.get("name") as string,
-      price: formData.get("price") as string,
+      listingPurpose: formData.get("listingPurpose") as string || "sale",
+      propertyType: formData.get("propertyType") as string,
+      priceVisibility: formData.get("priceVisibility") as string || "show",
+      price: formData.get("price") as string || undefined,
+      rentPeriod: formData.get("rentPeriod") as string || undefined,
       location: formData.get("location") as string,
       showFullAddress: formData.get("showFullAddress") === "true",
       beds: formData.get("beds") as string,
