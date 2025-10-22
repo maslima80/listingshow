@@ -154,9 +154,10 @@ export async function PUT(
       const isHero = mediaId === heroMediaId;
       const isVideo = file.type.startsWith("video/");
       
-      let uploadedUrl: string;
+      let uploadedUrl = "";
       let thumbnailUrl: string | null = null;
       let bunnyVideoId: string | null = null;
+      let imagekitFileId: string | null = null;
       
       // Upload to ImageKit for photos, Bunny.net for videos
       if (!isVideo) {
@@ -171,6 +172,7 @@ export async function PUT(
           );
           
           uploadedUrl = result.url;
+          imagekitFileId = result.fileId;
         } catch (error) {
           console.error('ImageKit upload failed:', error);
           // Fallback to local storage if ImageKit fails
@@ -209,7 +211,7 @@ export async function PUT(
           label: mediaTitle || null,
           position: currentMediaCount + i,
           provider: isVideo ? 'bunny' : 'imagekit',
-          providerId: bunnyVideoId,
+          providerId: isVideo ? bunnyVideoId : imagekitFileId,
         })
         .returning();
       
