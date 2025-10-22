@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { HeroMedia } from "./HeroMedia";
 import { HostCard } from "./HostCard";
 import { VideoChapters } from "./VideoChapters";
+import { KeyFacts } from "./KeyFacts";
 import { CinematicPlayer } from "./CinematicPlayer";
 import { Synopsis } from "./Synopsis";
 import { PhotoGallery } from "./PhotoGallery";
@@ -47,9 +48,14 @@ interface CinematicPropertyPageProps {
   title: string;
   location: string;
   price: string;
+  listingPurpose?: 'sale' | 'rent' | 'coming_soon';
+  propertyType?: string | null;
   beds?: number | null;
   baths?: number | null;
   areaSqft?: string | null;
+  yearBuilt?: number | null;
+  hoaDues?: string | null;
+  hoaPeriod?: string | null;
   
   // Host
   primaryAgent?: Agent;
@@ -80,9 +86,14 @@ export function CinematicPropertyPage({
   title,
   location,
   price,
+  listingPurpose,
+  propertyType,
   beds,
   baths,
   areaSqft,
+  yearBuilt,
+  hoaDues,
+  hoaPeriod,
   primaryAgent,
   videoChapters,
   description,
@@ -165,6 +176,7 @@ export function CinematicPropertyPage({
         title={title}
         location={location}
         price={price}
+        listingPurpose={listingPurpose}
         beds={beds}
         baths={baths}
         areaSqft={areaSqft}
@@ -228,7 +240,21 @@ export function CinematicPropertyPage({
       {/* 6. Gallery (Photos) */}
       <PhotoGallery photos={photos} />
 
-      {/* 7. End Credits (Contact) */}
+      {/* 7. Key Facts */}
+      <KeyFacts
+        listingPurpose={listingPurpose}
+        propertyType={propertyType}
+        beds={beds}
+        baths={baths}
+        areaSqft={areaSqft}
+        price={price}
+        yearBuilt={yearBuilt}
+        hoaDues={hoaDues}
+        hoaPeriod={hoaPeriod}
+        location={location}
+      />
+
+      {/* 8. End Credits (Contact) */}
       <div ref={contactRef}>
         <EndCredits
           agents={agents}

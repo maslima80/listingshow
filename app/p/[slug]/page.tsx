@@ -133,9 +133,14 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
           property.price,
           property.rentPeriod
         )}
+        listingPurpose={property.listingPurpose as ListingPurpose}
+        propertyType={property.propertyType}
         beds={property.beds}
         baths={property.baths ? parseFloat(property.baths as string) : null}
         areaSqft={property.areaSqft}
+        yearBuilt={property.yearBuilt}
+        hoaDues={property.hoaDues}
+        hoaPeriod={property.hoaPeriod}
         
         // Host
         primaryAgent={primaryAgent}

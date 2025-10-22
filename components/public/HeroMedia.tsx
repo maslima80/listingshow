@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { MapPin, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { formatBathrooms } from "@/lib/utils/formatBathrooms";
 import { HLSVideoPlayer } from "../HLSVideoPlayer";
 
@@ -14,6 +15,7 @@ interface HeroMediaProps {
   title: string;
   location: string;
   price: string;
+  listingPurpose?: 'sale' | 'rent' | 'coming_soon';
   beds?: number | null;
   baths?: number | null;
   areaSqft?: string | null;
@@ -29,6 +31,7 @@ export function HeroMedia({
   title,
   location,
   price,
+  listingPurpose = 'sale',
   beds,
   baths,
   areaSqft,
@@ -108,6 +111,15 @@ export function HeroMedia({
         <div className="max-w-6xl mx-auto w-full">
           {/* GROUP 1: Identity (Title + Location) */}
           <div className="space-y-2">
+            {/* For Rent Badge */}
+            {listingPurpose === 'rent' && (
+              <Badge 
+                className="bg-white/20 backdrop-blur-sm text-white border-white/30 hover:bg-white/30 text-sm font-medium px-3 py-1"
+              >
+                For Rent
+              </Badge>
+            )}
+            
             {/* Title */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight">
               {title}
