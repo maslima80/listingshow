@@ -5,6 +5,7 @@ import { properties, mediaAssets } from "@/lib/db/schema";
 import { authOptions } from "@/lib/auth";
 import { eq, and } from "drizzle-orm";
 import { deleteFromBunny } from "@/lib/bunny";
+import { deleteFromImageKit } from "@/lib/imagekit";
 
 export async function DELETE(
   request: NextRequest,
@@ -39,33 +40,48 @@ export async function DELETE(
       );
     }
 
-    // Get all media assets to delete from Bunny.net
+    // Get all media assets to delete from cloud storage
     const media = await db
       .select()
       .from(mediaAssets)
       .where(eq(mediaAssets.propertyId, params.id));
 
-    // Delete videos from Bunny.net
+    // Delete media from cloud storage (Bunny.net for videos, ImageKit for photos)
     const deletionResults = {
       total: media.length,
-      deleted: 0,
-      failed: 0,
+      videos: { deleted: 0, failed: 0 },
+      photos: { deleted: 0, failed: 0 },
       errors: [] as string[],
     };
 
     for (const item of media) {
-      // Only delete videos from Bunny (photos are stored locally or elsewhere)
-      if (item.type === 'video' && item.providerId) {
+      if (!item.providerId) continue; // Skip if no provider ID
+      
+      if (item.type === 'video') {
+        // Delete videos from Bunny.net
         try {
           await deleteFromBunny(item.providerId);
-          deletionResults.deleted++;
+          deletionResults.videos.deleted++;
           console.log(`✓ Deleted Bunny video: ${item.providerId}`);
         } catch (error) {
-          deletionResults.failed++;
+          deletionResults.videos.failed++;
           const errorMsg = `Failed to delete Bunny video ${item.providerId}: ${error instanceof Error ? error.message : String(error)}`;
           deletionResults.errors.push(errorMsg);
           console.error(errorMsg);
-          // Continue even if Bunny deletion fails - we still want to delete from DB
+          // Continue even if deletion fails - we still want to delete from DB
+        }
+      } else if (item.type === 'photo') {
+        // Delete photos from ImageKit
+        try {
+          await deleteFromImageKit(item.providerId);
+          deletionResults.photos.deleted++;
+          console.log(`✓ Deleted ImageKit photo: ${item.providerId}`);
+        } catch (error) {
+          deletionResults.photos.failed++;
+          const errorMsg = `Failed to delete ImageKit photo ${item.providerId}: ${error instanceof Error ? error.message : String(error)}`;
+          deletionResults.errors.push(errorMsg);
+          console.error(errorMsg);
+          // Continue even if deletion fails - we still want to delete from DB
         }
       }
     }
@@ -82,8 +98,8 @@ export async function DELETE(
       message: "Property deleted successfully",
       mediaDeletion: {
         total: deletionResults.total,
-        deleted: deletionResults.deleted,
-        failed: deletionResults.failed,
+        videos: deletionResults.videos,
+        photos: deletionResults.photos,
         ...(deletionResults.errors.length > 0 && { errors: deletionResults.errors }),
       },
     });
