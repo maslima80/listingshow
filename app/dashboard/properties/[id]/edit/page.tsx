@@ -92,7 +92,11 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
             userId={session.user.id}
             initialData={{
               name: property.title,
+              listingPurpose: (property.listingPurpose || 'sale') as 'sale' | 'rent' | 'coming_soon',
+              propertyType: property.propertyType || '',
+              priceVisibility: (property.priceVisibility || 'show') as 'show' | 'upon_request' | 'contact',
               price: property.price || "",
+              rentPeriod: property.rentPeriod || 'month',
               location: property.location,
               showFullAddress: true,
               beds: property.beds?.toString() || "",
