@@ -13,6 +13,9 @@ export const hubBlockTypeEnum = pgEnum('hub_block_type', ['property', 'link', 'i
 export const themeModeEnum = pgEnum('theme_mode', ['dark', 'light']);
 export const subscriptionStatusEnum = pgEnum('subscription_status', ['trialing', 'active', 'past_due', 'canceled', 'expired']);
 export const planTypeEnum = pgEnum('plan_type', ['solo', 'pro', 'agency']);
+export const listingPurposeEnum = pgEnum('listing_purpose', ['sale', 'rent', 'coming_soon']);
+export const propertyTypeEnum = pgEnum('property_type', ['single_family', 'condo', 'townhouse', 'multi_family', 'land', 'lot', 'commercial', 'other']);
+export const priceVisibilityEnum = pgEnum('price_visibility', ['show', 'upon_request', 'contact']);
 
 // ============================================================================
 // USER & AUTH
@@ -81,7 +84,11 @@ export const properties = pgTable('properties', {
   subtitle: text('subtitle'),
   description: text('description'),
   location: text('location').notNull(),
+  listingPurpose: listingPurposeEnum('listing_purpose').default('sale').notNull(),
+  propertyType: propertyTypeEnum('property_type'),
   price: numeric('price', { precision: 12, scale: 2 }),
+  priceVisibility: priceVisibilityEnum('price_visibility').default('show').notNull(),
+  rentPeriod: varchar('rent_period', { length: 20 }), // 'month', 'week', 'night'
   currency: varchar('currency', { length: 3 }).default('USD'),
   beds: integer('beds'),
   baths: numeric('baths', { precision: 3, scale: 1 }),
