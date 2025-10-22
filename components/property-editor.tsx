@@ -8,7 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { VideoThumbnailSelector } from "@/components/video-thumbnail-selector";
+import { LISTING_PURPOSES, PROPERTY_TYPES, PRICE_VISIBILITY_OPTIONS, RENT_PERIODS, type ListingPurpose, type PriceVisibility } from "@/lib/property-types";
 import { 
   Upload, 
   Video, 
@@ -52,7 +55,11 @@ interface PropertyEditorProps {
   userId: string;
   initialData: {
     name: string;
+    listingPurpose: ListingPurpose;
+    propertyType: string;
+    priceVisibility: PriceVisibility;
     price: string;
+    rentPeriod: string;
     location: string;
     showFullAddress: boolean;
     beds: string;
@@ -267,8 +274,15 @@ export function PropertyEditor({
   };
 
   const handleSave = async () => {
-    if (!formData.name || !formData.price || mediaFiles.length === 0) {
-      alert("Please add property name, price, and at least one photo/video");
+    // Validation
+    if (!formData.name || !formData.propertyType || mediaFiles.length === 0) {
+      alert("Please add property name, property type, and at least one photo/video");
+      return;
+    }
+
+    // Validate price for sale listings with "show" visibility
+    if (formData.listingPurpose === 'sale' && formData.priceVisibility === 'show' && !formData.price) {
+      alert("Please add a price for this sale listing");
       return;
     }
 
@@ -279,7 +293,23 @@ export function PropertyEditor({
       
       // Add property details
       data.append("name", formData.name);
-      data.append("price", formData.price);
+      data.append("listingPurpose", formData.listingPurpose);
+      data.append("propertyType", formData.propertyType);
+      data.append("priceVisibility", formData.priceVisibility);
+      
+      // Only add price if applicable
+      if (formData.price && (
+        (formData.listingPurpose === 'sale' && formData.priceVisibility === 'show') ||
+        (formData.listingPurpose === 'rent' && formData.priceVisibility === 'show')
+      )) {
+        data.append("price", formData.price);
+      }
+      
+      // Add rent period if applicable
+      if (formData.listingPurpose === 'rent' && formData.rentPeriod) {
+        data.append("rentPeriod", formData.rentPeriod);
+      }
+      
       data.append("location", formData.location);
       data.append("showFullAddress", formData.showFullAddress.toString());
       data.append("beds", formData.beds);
@@ -559,7 +589,7 @@ export function PropertyEditor({
         </CardContent>
       </Card>
 
-      {/* Property Details */}
+      {/* Property Details — MVP */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -568,7 +598,7 @@ export function PropertyEditor({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Name */}
+          {/* Row 1: Property Name */}
           <div className="space-y-2">
             <Label htmlFor="name">Property Name *</Label>
             <Input
@@ -580,44 +610,185 @@ export function PropertyEditor({
             />
           </div>
 
-          {/* Price & Location Row */}
+          {/* Row 2: Listing Purpose & Property Type */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="price">
-                <DollarSign className="w-4 h-4 inline mr-1" />
-                Price *
-              </Label>
-              <Input
-                id="price"
-                value={formData.price}
-                onChange={(e) => {
-                  // Remove all non-numeric characters except decimal point
-                  const value = e.target.value.replace(/[^0-9.]/g, '');
-                  // Format with thousand separators
-                  const parts = value.split('.');
-                  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                  const formatted = parts.join('.');
-                  setFormData(prev => ({ ...prev, price: formatted }));
-                }}
-                placeholder="299,900"
-              />
+              <Label>Listing Purpose *</Label>
+              <RadioGroup
+                value={formData.listingPurpose}
+                onValueChange={(value) => setFormData(prev => ({ 
+                  ...prev, 
+                  listingPurpose: value as ListingPurpose,
+                  priceVisibility: value === 'rent' ? 'show' : 'show'
+                }))}
+                className="flex gap-4"
+              >
+                {LISTING_PURPOSES.map((purpose) => (
+                  <div key={purpose.value} className="flex items-center space-x-2">
+                    <RadioGroupItem value={purpose.value} id={`edit-${purpose.value}`} />
+                    <Label htmlFor={`edit-${purpose.value}`} className="font-normal cursor-pointer">
+                      {purpose.label}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="location">
-                <MapPin className="w-4 h-4 inline mr-1" />
-                Location *
-              </Label>
-              <Input
-                id="location"
-                value={formData.location}
-                onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                placeholder="123 Ocean Drive, Miami"
-              />
+              <Label htmlFor="propertyType">Property Type *</Label>
+              <Select
+                value={formData.propertyType}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, propertyType: value }))}
+              >
+                <SelectTrigger id="propertyType">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {PROPERTY_TYPES.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          {/* Quick Stats Row */}
+          {/* Row 3: Dynamic Pricing (based on listing purpose) */}
+          <div className="space-y-4" data-purpose={formData.listingPurpose}>
+            {/* For Sale */}
+            {formData.listingPurpose === 'sale' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="priceVisibility">Price Visibility *</Label>
+                  <Select
+                    value={formData.priceVisibility}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, priceVisibility: value as PriceVisibility }))}
+                  >
+                    <SelectTrigger id="priceVisibility">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PRICE_VISIBILITY_OPTIONS.sale.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {formData.priceVisibility !== 'show' && (
+                    <p className="text-xs text-muted-foreground">
+                      When hidden, the public page will show "{formData.priceVisibility === 'upon_request' ? 'Price upon request' : 'Contact for price'}".
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="price">
+                    <DollarSign className="w-4 h-4 inline mr-1" />
+                    Price {formData.priceVisibility === 'show' && '*'}
+                  </Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    value={formData.price}
+                    onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                    placeholder="1,299,000"
+                    disabled={formData.priceVisibility !== 'show'}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* For Rent */}
+            {formData.listingPurpose === 'rent' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="priceVisibility">Price Visibility *</Label>
+                  <Select
+                    value={formData.priceVisibility}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, priceVisibility: value as PriceVisibility }))}
+                  >
+                    <SelectTrigger id="priceVisibility">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PRICE_VISIBILITY_OPTIONS.rent.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {formData.priceVisibility === 'contact' && (
+                    <p className="text-xs text-muted-foreground">
+                      When hidden, the public page will show "Contact for rent".
+                    </p>
+                  )}
+                </div>
+
+                {formData.priceVisibility === 'show' && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="price">
+                        <DollarSign className="w-4 h-4 inline mr-1" />
+                        Rent Amount
+                      </Label>
+                      <Input
+                        id="price"
+                        type="number"
+                        value={formData.price}
+                        onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                        placeholder="3,200"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="rentPeriod">Per *</Label>
+                      <Select
+                        value={formData.rentPeriod}
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, rentPeriod: value }))}
+                      >
+                        <SelectTrigger id="rentPeriod">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {RENT_PERIODS.map((period) => (
+                            <SelectItem key={period.value} value={period.value}>
+                              {period.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Coming Soon - No price fields */}
+            {formData.listingPurpose === 'coming_soon' && (
+              <div className="text-sm text-muted-foreground italic">
+                No pricing fields needed for "Coming Soon" listings. The public page will display a "Coming soon" badge.
+              </div>
+            )}
+          </div>
+
+          {/* Row 4: Location */}
+          <div className="space-y-2">
+            <Label htmlFor="location">
+              <MapPin className="w-4 h-4 inline mr-1" />
+              Location *
+            </Label>
+            <Input
+              id="location"
+              value={formData.location}
+              onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+              placeholder="Miami Beach, FL or 123 Ocean Drive, Miami Beach, FL"
+            />
+          </div>
+
+          {/* Row 5: Quick Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="space-y-2">
               <Label htmlFor="beds">
@@ -626,14 +797,9 @@ export function PropertyEditor({
               </Label>
               <Input
                 id="beds"
-                type="text"
-                inputMode="numeric"
+                type="number"
                 value={formData.beds}
-                onChange={(e) => {
-                  // Only allow numbers
-                  const value = e.target.value.replace(/[^0-9]/g, '');
-                  setFormData(prev => ({ ...prev, beds: value }));
-                }}
+                onChange={(e) => setFormData(prev => ({ ...prev, beds: e.target.value }))}
                 placeholder="3"
               />
             </div>
@@ -649,14 +815,12 @@ export function PropertyEditor({
                 inputMode="decimal"
                 value={formData.baths}
                 onChange={(e) => {
-                  // Only allow numbers and single decimal point
                   const value = e.target.value.replace(/[^0-9.]/g, '');
-                  // Ensure only one decimal point
                   const parts = value.split('.');
                   const formatted = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : value;
                   setFormData(prev => ({ ...prev, baths: formatted }));
                 }}
-                placeholder="2"
+                placeholder="2.5"
               />
             </div>
 
@@ -667,14 +831,9 @@ export function PropertyEditor({
               </Label>
               <Input
                 id="parking"
-                type="text"
-                inputMode="numeric"
+                type="number"
                 value={formData.parking}
-                onChange={(e) => {
-                  // Only allow numbers
-                  const value = e.target.value.replace(/[^0-9]/g, '');
-                  setFormData(prev => ({ ...prev, parking: value }));
-                }}
+                onChange={(e) => setFormData(prev => ({ ...prev, parking: e.target.value }))}
                 placeholder="2"
               />
             </div>
@@ -686,14 +845,9 @@ export function PropertyEditor({
               </Label>
               <Input
                 id="sqft"
-                type="text"
-                inputMode="numeric"
+                type="number"
                 value={formData.sqft}
-                onChange={(e) => {
-                  // Only allow numbers
-                  const value = e.target.value.replace(/[^0-9]/g, '');
-                  setFormData(prev => ({ ...prev, sqft: value }));
-                }}
+                onChange={(e) => setFormData(prev => ({ ...prev, sqft: e.target.value }))}
                 placeholder="2500"
               />
             </div>
@@ -928,7 +1082,7 @@ export function PropertyEditor({
               <Button
                 size="lg"
                 onClick={handleSave}
-                disabled={isSaving || !formData.name || !formData.price || mediaFiles.length === 0}
+                disabled={isSaving || !formData.name || !formData.propertyType || mediaFiles.length === 0}
               >
                 {isSaving ? (
                   <>
