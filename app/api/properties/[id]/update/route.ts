@@ -10,7 +10,11 @@ import { uploadToBunny } from "@/lib/bunny";
 
 const updatePropertySchema = z.object({
   name: z.string().min(1, "Property name is required"),
-  price: z.string().min(1, "Price is required"),
+  listingPurpose: z.enum(['sale', 'rent', 'coming_soon']).default('sale'),
+  propertyType: z.enum(['single_family', 'condo', 'townhouse', 'multi_family', 'land', 'lot', 'commercial', 'other']).optional(),
+  priceVisibility: z.enum(['show', 'upon_request', 'contact']).default('show'),
+  price: z.string().optional(), // Now optional - depends on listing purpose and visibility
+  rentPeriod: z.string().optional(),
   location: z.string().min(1, "Location is required"),
   showFullAddress: z.boolean().default(true),
   beds: z.string().optional(),
@@ -89,7 +93,11 @@ export async function PUT(
       .update(properties)
       .set({
         title: validated.name,
-        price: validated.price.replace(/[^0-9.]/g, ''),
+        listingPurpose: validated.listingPurpose,
+        propertyType: validated.propertyType || null,
+        priceVisibility: validated.priceVisibility,
+        price: validated.price ? validated.price.replace(/[^0-9.]/g, '') : null,
+        rentPeriod: validated.rentPeriod || null,
         location: validated.location,
         beds: validated.beds ? parseInt(validated.beds) : null,
         baths: validated.baths ? validated.baths : null,
