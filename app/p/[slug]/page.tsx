@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { properties, mediaAssets, propertyAgents, agentProfiles, teamThemes, themes } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { CinematicPropertyPage } from "@/components/public/CinematicPropertyPage";
+import { formatPriceDisplay, type ListingPurpose, type PriceVisibility } from "@/lib/property-types";
 
 export default async function PropertyPage({ params }: { params: Promise<{ slug: string }> }) {
   // Await params (Next.js 15 requirement)
@@ -126,7 +127,12 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
         firstVideoUrl={firstVideoUrl}
         title={property.title}
         location={property.location}
-        price={`$${parseFloat(property.price || "0").toLocaleString()}`}
+        price={formatPriceDisplay(
+          property.listingPurpose as ListingPurpose,
+          property.priceVisibility as PriceVisibility,
+          property.price,
+          property.rentPeriod
+        )}
         beds={property.beds}
         baths={property.baths ? parseFloat(property.baths as string) : null}
         areaSqft={property.areaSqft}
