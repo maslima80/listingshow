@@ -2,10 +2,20 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Bell } from "lucide-react"
+import { Bell, User, Settings, CreditCard, Palette, LogOut } from "lucide-react"
 import { useLeadCount } from "@/hooks/use-lead-count"
 import { useToast } from "@/hooks/use-toast"
 import { useEffect, useRef } from "react"
+import { signOut } from "next-auth/react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
 interface DashboardNavProps {
   userName?: string
@@ -65,7 +75,7 @@ export function DashboardNav({ userName, teamSlug }: DashboardNavProps) {
               </div>
             )}
           </div>
-          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             {/* Bell Icon with Badge */}
             <Link 
               href="/dashboard/leads?status=new"
@@ -80,9 +90,64 @@ export function DashboardNav({ userName, teamSlug }: DashboardNavProps) {
               )}
             </Link>
             
-            {userName && (
-              <span className="hidden sm:inline text-sm text-slate-600 truncate max-w-[120px]">Welcome, {userName}</span>
-            )}
+            {/* User Menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className="focus:outline-none">
+                <div className="flex items-center gap-2 p-1.5 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                      {userName?.charAt(0).toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  {userName && (
+                    <span className="hidden sm:inline text-sm font-medium text-slate-700 max-w-[100px] truncate">
+                      {userName.split(' ')[0]}
+                    </span>
+                  )}
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium">{userName || 'User'}</p>
+                    {teamSlug && (
+                      <p className="text-xs text-muted-foreground">listing.show/u/{teamSlug}</p>
+                    )}
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/profile" className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/branding" className="cursor-pointer">
+                    <Palette className="mr-2 h-4 w-4" />
+                    Branding
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/account" className="cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Account Settings
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem disabled>
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  Billing (Coming Soon)
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={() => signOut({ callbackUrl: '/signin' })}
+                  className="cursor-pointer text-red-600 focus:text-red-600"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>

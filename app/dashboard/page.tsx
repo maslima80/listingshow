@@ -48,8 +48,8 @@ export default async function DashboardPage() {
             <p className="text-slate-600">Manage your properties and showcase</p>
           </div>
 
-          {/* Dashboard Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Quick Actions - Priority Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             {/* Complete Profile - Priority */}
             <Card className="group hover:shadow-lg transition-all duration-200 border-2 border-primary/50 bg-primary/5">
               <CardHeader>
@@ -89,7 +89,10 @@ export default async function DashboardPage() {
                 </Link>
               </CardContent>
             </Card>
+          </div>
 
+          {/* Main Sections */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Leads */}
             <LeadsCard />
 
@@ -113,174 +116,100 @@ export default async function DashboardPage() {
               </CardContent>
             </Card>
 
-            {/* Neighborhoods */}
-            <Card className="group hover:shadow-lg transition-all duration-200 border-2 hover:border-teal-200">
+            {/* View Properties */}
+            <Card className="group hover:shadow-lg transition-all duration-200 border-2 hover:border-blue-200">
               <CardHeader>
-                <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-teal-200 transition-colors">
-                  <MapPin className="w-6 h-6 text-teal-600" />
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-blue-200 transition-colors">
+                  <Eye className="w-6 h-6 text-blue-600" />
                 </div>
-                <CardTitle>Neighborhoods</CardTitle>
+                <CardTitle>View Properties</CardTitle>
                 <CardDescription>
-                  Showcase areas you serve with photos & videos
+                  See all your listings and manage them
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Link href="/dashboard/neighborhoods">
-                  <Button variant="outline" className="w-full">
-                    Manage Neighborhoods
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            {/* Testimonials */}
-            <Card className="group hover:shadow-lg transition-all duration-200 border-2 hover:border-yellow-200">
-              <CardHeader>
-                <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-yellow-200 transition-colors">
-                  <Star className="w-6 h-6 text-yellow-600" />
-                </div>
-                <CardTitle>Testimonials</CardTitle>
-                <CardDescription>
-                  Collect and display client reviews
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link href="/dashboard/testimonials">
-                  <Button variant="outline" className="w-full">
-                    Manage Testimonials
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            {/* Resources */}
-            <Card className="group hover:shadow-lg transition-all duration-200 border-2 hover:border-indigo-200">
-              <CardHeader>
-                <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-indigo-200 transition-colors">
-                  <Download className="w-6 h-6 text-indigo-600" />
-                </div>
-                <CardTitle>Resources</CardTitle>
-                <CardDescription>
-                  Lead magnets & downloadable guides
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link href="/dashboard/resources">
-                  <Button variant="outline" className="w-full">
-                    Manage Resources
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            {/* Agents */}
-            {session.user.teamMode === "multi" && (
-              <Card className="group hover:shadow-lg transition-all duration-200 border-2 hover:border-emerald-200">
-                <CardHeader>
-                  <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-emerald-200 transition-colors">
-                    <Users className="w-6 h-6 text-emerald-600" />
-                  </div>
-                  <CardTitle>Agents</CardTitle>
-                  <CardDescription>
-                    Manage your team members and agent profiles
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="outline" className="w-full" disabled>
-                    Coming Soon
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Branding & Theme */}
-            <Card className="group hover:shadow-lg transition-all duration-200 border-2 hover:border-amber-200">
-              <CardHeader>
-                <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-amber-200 transition-colors">
-                  <Palette className="w-6 h-6 text-amber-600" />
-                </div>
-                <CardTitle>Branding & Theme</CardTitle>
-                <CardDescription>
-                  Customize your colors and visual style
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link href="/dashboard/branding">
-                  <Button variant="outline" className="w-full">
-                    Customize Theme
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            {/* Billing & Usage */}
-            <Card className="group hover:shadow-lg transition-all duration-200 border-2 hover:border-slate-200">
-              <CardHeader>
-                <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-slate-200 transition-colors">
-                  <CreditCard className="w-6 h-6 text-slate-600" />
-                </div>
-                <CardTitle>Billing & Usage</CardTitle>
-                <CardDescription>
-                  Manage your subscription and track usage
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 mb-4">
+                <div className="space-y-3">
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-600">Trial Status</span>
-                    <span className="font-medium text-emerald-600">14 days remaining</span>
+                    <span className="text-muted-foreground">Total Properties</span>
+                    <span className="font-semibold">{teamProperties.length}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-600">Properties</span>
-                    <span className="font-medium">0 / 2</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-600">Video Minutes</span>
-                    <span className="font-medium">0 / 30</span>
-                  </div>
+                  <Link href="/dashboard/properties">
+                    <Button variant="outline" className="w-full">
+                      Manage Properties
+                    </Button>
+                  </Link>
                 </div>
-                <Button variant="outline" className="w-full" disabled>
-                  Manage Plan
-                </Button>
               </CardContent>
             </Card>
           </div>
 
-          {/* Properties Section */}
-          {teamProperties.length > 0 ? (
-            <div className="mt-12">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold">Your Properties</h3>
-                <Badge variant="secondary">{teamProperties.length} {teamProperties.length === 1 ? 'property' : 'properties'}</Badge>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {teamProperties.map(({ property, coverMedia }) => (
-                  <PropertyCard
-                    key={property.id}
-                    property={property}
-                    coverMedia={coverMedia}
-                  />
-                ))}
-              </div>
+          {/* Content Managers Section */}
+          <div className="mt-12">
+            <h3 className="text-xl font-bold mb-4">Content Managers</h3>
+            <p className="text-muted-foreground mb-6">Build content for your Hub and property pages</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Neighborhoods */}
+              <Card className="group hover:shadow-lg transition-all duration-200">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-teal-200 transition-colors">
+                    <MapPin className="w-6 h-6 text-teal-600" />
+                  </div>
+                  <CardTitle className="text-lg">Neighborhoods</CardTitle>
+                  <CardDescription>
+                    Showcase areas you serve
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Link href="/dashboard/neighborhoods">
+                    <Button variant="outline" className="w-full" size="sm">
+                      Manage
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              {/* Testimonials */}
+              <Card className="group hover:shadow-lg transition-all duration-200">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-yellow-200 transition-colors">
+                    <Star className="w-6 h-6 text-yellow-600" />
+                  </div>
+                  <CardTitle className="text-lg">Testimonials</CardTitle>
+                  <CardDescription>
+                    Collect client reviews
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Link href="/dashboard/testimonials">
+                    <Button variant="outline" className="w-full" size="sm">
+                      Manage
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              {/* Resources */}
+              <Card className="group hover:shadow-lg transition-all duration-200">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-indigo-200 transition-colors">
+                    <Download className="w-6 h-6 text-indigo-600" />
+                  </div>
+                  <CardTitle className="text-lg">Resources</CardTitle>
+                  <CardDescription>
+                    Lead magnets & guides
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Link href="/dashboard/resources">
+                    <Button variant="outline" className="w-full" size="sm">
+                      Manage
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
             </div>
-          ) : (
-            /* Empty State */
-            <div className="mt-12 text-center p-12 bg-white rounded-2xl border-2 border-dashed border-slate-200">
-              <div className="max-w-md mx-auto">
-                <div className="text-6xl mb-4">🏡</div>
-                <h3 className="text-2xl font-bold mb-2">No properties yet</h3>
-                <p className="text-slate-600 mb-6">
-                  Create your first cinematic property page and start showcasing
-                </p>
-                <Link href="/dashboard/properties/new">
-                  <Button size="lg">
-                    <PlusCircle className="w-5 h-5 mr-2" />
-                    Create Your First Property
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       </main>
     </DashboardClientWrapper>
