@@ -336,7 +336,7 @@ export function ProfileEditor({ profileId, initialData, neighborhoods = [] }: Pr
             <div className="space-y-3">
               <Label className="flex items-center">
                 Upload Video
-                <HelpTooltip content="30-90 second introduction video. This can appear in your Hub hero or about section. Makes your profile stand out! Upload directly to Bunny.net." />
+                <HelpTooltip content="30-90 second introduction video. This can appear in your Hub hero or about section. Makes your profile stand out! Uploads directly to Bunny.net." />
               </Label>
               <div className="space-y-3">
                 {data.videoUrl ? (
@@ -359,28 +359,65 @@ export function ProfileEditor({ profileId, initialData, neighborhoods = [] }: Pr
                     </Button>
                   </div>
                 ) : (
-                  <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                    <Video className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Upload your video introduction
-                    </p>
-                    <Input
-                      type="file"
-                      accept="video/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          // For now, create a local preview URL
-                          // In production, this would upload to Bunny.net
-                          const url = URL.createObjectURL(file);
-                          updateField("videoUrl", url);
-                        }
-                      }}
-                      className="max-w-xs mx-auto"
-                    />
-                    <p className="text-xs text-muted-foreground mt-2">
-                      MP4, MOV, or WebM. Max 2 minutes. Uploads to Bunny.net.
-                    </p>
+                  <div className="border-2 border-dashed border-border rounded-lg p-6">
+                    <div className="space-y-4">
+                      <div className="text-center">
+                        <Video className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground mb-2">
+                          Upload your video introduction
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          MP4, MOV, or WebM. Max 2 minutes.
+                        </p>
+                      </div>
+                      <input
+                        type="file"
+                        accept="video/*"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+
+                          // Show loading state
+                          const loadingToast = document.createElement('div');
+                          loadingToast.textContent = 'Uploading to Bunny.net...';
+                          
+                          try {
+                            // Upload to Bunny.net
+                            const formData = new FormData();
+                            formData.append('video', file); // API expects 'video' not 'file'
+                            formData.append('title', `${data.name || 'Agent'} Profile Video`);
+
+                            const response = await fetch('/api/upload/video', {
+                              method: 'POST',
+                              body: formData,
+                            });
+
+                            if (!response.ok) {
+                              const errorData = await response.json();
+                              throw new Error(errorData.error || 'Upload failed');
+                            }
+
+                            const result = await response.json();
+                            
+                            // Use the HLS URL for playback
+                            updateField("videoUrl", result.hlsUrl);
+                            
+                            alert('✓ Video uploaded successfully to Bunny.net!');
+                            
+                          } catch (error) {
+                            console.error('Video upload error:', error);
+                            alert(`Failed to upload video: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                          }
+                        }}
+                        className="block w-full text-sm text-muted-foreground
+                          file:mr-4 file:py-2 file:px-4
+                          file:rounded-md file:border-0
+                          file:text-sm file:font-semibold
+                          file:bg-primary file:text-primary-foreground
+                          hover:file:bg-primary/90
+                          cursor-pointer"
+                      />
+                    </div>
                   </div>
                 )}
               </div>
