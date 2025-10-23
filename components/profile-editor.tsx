@@ -68,6 +68,7 @@ export function ProfileEditor({ profileId, initialData, neighborhoods = [] }: Pr
   const [photoPreview, setPhotoPreview] = useState(initialData.photoUrl);
   const [isInitialMount, setIsInitialMount] = useState(true);
   const [newCredential, setNewCredential] = useState("");
+  const [videoThumbnail, setVideoThumbnail] = useState<string>("");
 
   useEffect(() => {
     if (isInitialMount) {
@@ -342,16 +343,28 @@ export function ProfileEditor({ profileId, initialData, neighborhoods = [] }: Pr
                 {data.videoUrl ? (
                   <div className="space-y-3">
                     <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
-                      <video
-                        src={data.videoUrl}
-                        controls
-                        className="w-full h-full"
-                      />
+                      {videoThumbnail ? (
+                        <img
+                          src={videoThumbnail}
+                          alt="Video thumbnail"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <video
+                          src={data.videoUrl}
+                          controls
+                          poster={videoThumbnail}
+                          className="w-full h-full"
+                        />
+                      )}
                     </div>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => updateField("videoUrl", "")}
+                      onClick={() => {
+                        updateField("videoUrl", "");
+                        setVideoThumbnail("");
+                      }}
                       className="w-full"
                     >
                       <X className="w-4 h-4 mr-2" />
@@ -399,8 +412,11 @@ export function ProfileEditor({ profileId, initialData, neighborhoods = [] }: Pr
 
                             const result = await response.json();
                             
-                            // Use the HLS URL for playback
+                            // Store the HLS URL for playback
                             updateField("videoUrl", result.hlsUrl);
+                            
+                            // Store thumbnail separately for display
+                            setVideoThumbnail(result.thumbnailUrl);
                             
                             alert('✓ Video uploaded successfully to Bunny.net!');
                             
