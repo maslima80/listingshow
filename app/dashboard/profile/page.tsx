@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { agentProfiles } from "@/lib/db/schema";
+import { agentProfiles, neighborhoods } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { ProfileEditor } from "@/components/profile-editor";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,15 @@ export default async function ProfilePage() {
     .from(agentProfiles)
     .where(eq(agentProfiles.userId, session.user.id))
     .limit(1);
+
+  // Get neighborhoods for service areas
+  const neighborhoodsList = await db
+    .select({
+      id: neighborhoods.id,
+      name: neighborhoods.name,
+    })
+    .from(neighborhoods)
+    .where(eq(neighborhoods.teamId, session.user.teamId));
 
   return (
     <div className="min-h-screen bg-background">
@@ -57,13 +66,25 @@ export default async function ProfilePage() {
             initialData={{
               name: profile?.name || session.user.name || "",
               title: profile?.title || "",
+              tagline: profile?.tagline || "",
               bio: profile?.bio || "",
+              bioLong: profile?.bioLong || "",
+              videoUrl: profile?.videoUrl || "",
               email: profile?.email || session.user.email || "",
               phone: profile?.phone || "",
               whatsapp: profile?.whatsapp || "",
               photoUrl: profile?.photoUrl || "",
-              socialLinks: profile?.socialLinks as Record<string, string> || {},
+              calendlyUrl: profile?.calendlyUrl || "",
+              useInternalScheduling: profile?.useInternalScheduling || false,
+              socialLinks: (profile?.socialLinks as Record<string, string>) || {},
+              statsJson: (profile?.statsJson as any) || {},
+              credentials: (profile?.credentials as string[]) || [],
+              serviceAreas: (profile?.serviceAreas as string[]) || [],
+              brokerageName: profile?.brokerageName || "",
+              licenseNumber: profile?.licenseNumber || "",
+              disclosureText: profile?.disclosureText || "",
             }}
+            neighborhoods={neighborhoodsList}
           />
         </div>
       </main>
