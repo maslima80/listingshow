@@ -13,11 +13,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   User, Briefcase, Mail, Phone, MessageCircle, Instagram, Linkedin, Globe,
   Facebook, Check, Loader2, Upload, X, HelpCircle, Video, Calendar, Award,
-  TrendingUp, MapPin, Building2, Youtube, Twitter, Plus, Eye, FileText
+  TrendingUp, MapPin, Building2, Youtube, Twitter, Plus, Eye, FileText, Play, Image as ImageIcon
 } from "lucide-react";
 import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { HLSVideoPlayer } from "@/components/HLSVideoPlayer";
+import { getBunnyThumbnailOptions } from "@/lib/bunny-thumbnails";
 
 interface ProfileData {
   name: string;
@@ -27,6 +30,8 @@ interface ProfileData {
   bio: string;
   bioLong?: string;
   videoUrl?: string;
+  videoId?: string;
+  videoThumbnail?: string;
   statsJson?: { yearsExperience?: number; homesSold?: string; salesVolume?: string; };
   credentials?: string[];
   email: string;
@@ -34,7 +39,7 @@ interface ProfileData {
   whatsapp: string;
   calendlyUrl?: string;
   useInternalScheduling?: boolean;
-  socialLinks: Record<string, string>;
+  socialLinks?: Record<string, string>;
   serviceAreas?: string[];
   brokerageName?: string;
   licenseNumber?: string;
@@ -68,10 +73,13 @@ export function ProfileEditor({ profileId, initialData, neighborhoods = [] }: Pr
   const [photoPreview, setPhotoPreview] = useState(initialData.photoUrl);
   const [isInitialMount, setIsInitialMount] = useState(true);
   const [newCredential, setNewCredential] = useState("");
-  const [videoThumbnail, setVideoThumbnail] = useState<string>("");
-  const [videoId, setVideoId] = useState<string>("");
+  const [videoThumbnail, setVideoThumbnail] = useState<string>(initialData.videoThumbnail || "");
+  const [videoId, setVideoId] = useState<string>(initialData.videoId || "");
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [showVideoPlayer, setShowVideoPlayer] = useState(false);
+  const [showThumbnailPicker, setShowThumbnailPicker] = useState(false);
+  const [selectedThumbnail, setSelectedThumbnail] = useState<string>(initialData.videoThumbnail || "");
 
   useEffect(() => {
     if (isInitialMount) {
@@ -92,7 +100,12 @@ export function ProfileEditor({ profileId, initialData, neighborhoods = [] }: Pr
       const response = await fetch("/api/profile/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ profileId, ...data }),
+        body: JSON.stringify({ 
+          profileId, 
+          ...data,
+          videoId,
+          videoThumbnail,
+        }),
       });
       if (response.ok) {
         setShowSuccess(true);
@@ -343,100 +356,77 @@ export function ProfileEditor({ profileId, initialData, neighborhoods = [] }: Pr
                 <HelpTooltip content="30-90 second introduction video. This can appear in your Hub hero or about section. Makes your profile stand out! Uploads directly to Bunny.net." />
               </Label>
               <div className="space-y-3">
-                {data.videoUrl ? (
+                {data.videoUrl && videoThumbnail ? (
                   <div className="space-y-3">
-                    <div className="relative bg-black rounded-lg overflow-hidden mx-auto max-w-full flex items-center justify-center min-h-[200px]">
-                      {videoThumbnail ? (
-                        <>
-                          <img
-                            src={`${videoThumbnail}?t=${Date.now()}`}
-                            alt="Video thumbnail"
-                            className="max-w-full h-auto object-contain"
-                            style={{ maxHeight: '500px' }}
-                            onLoad={(e) => {
-                              // Detect aspect ratio from thumbnail
-                              const img = e.currentTarget;
-                              const isVertical = img.naturalHeight > img.naturalWidth;
-                              if (isVertical) {
-                                img.style.maxWidth = '400px';
-                                img.style.margin = '0 auto';
-                              }
-                            }}
-                            onError={(e) => {
-                              const img = e.currentTarget;
-                              const currentSrc = img.src;
-                              
-                              // Retry up to 5 times with increasing delays
-                              const retryCount = parseInt(img.dataset.retryCount || '0');
-                              if (retryCount < 5) {
-                                console.log(`Thumbnail not ready, retry ${retryCount + 1}/5...`);
-                                img.dataset.retryCount = String(retryCount + 1);
-                                
-                                // Wait longer each time: 2s, 4s, 6s, 8s, 10s
-                                setTimeout(() => {
-                                  img.src = `${videoThumbnail}?t=${Date.now()}`;
-                                }, (retryCount + 1) * 2000);
-                              } else {
-                                console.error('Thumbnail failed to load after 5 retries:', videoThumbnail);
-                                // Show fallback
-                                img.style.display = 'none';
-                                const fallback = img.parentElement?.querySelector('.fallback-message');
-                                if (fallback) {
-                                  (fallback as HTMLElement).style.display = 'block';
-                                }
-                              }
-                            }}
-                          />
-                          <div className="fallback-message text-center p-8" style={{ display: 'none' }}>
-                            <Video className="w-12 h-12 mx-auto mb-2 text-muted-foreground" />
-                            <p className="text-sm text-muted-foreground">Video uploaded successfully</p>
-                            <p className="text-xs text-muted-foreground mt-1">Thumbnail still processing...</p>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="text-center p-8">
-                          <Video className="w-12 h-12 mx-auto mb-2 text-muted-foreground" />
-                          <p className="text-sm text-muted-foreground">Video uploaded</p>
-                          <p className="text-xs text-muted-foreground mt-1">Thumbnail loading...</p>
+                    {/* Video Thumbnail with Play Overlay */}
+                    <div 
+                      className="relative bg-black rounded-lg overflow-hidden mx-auto max-w-full cursor-pointer group"
+                      onClick={() => setShowVideoPlayer(true)}
+                    >
+                      <img
+                        src={videoThumbnail}
+                        alt="Video thumbnail"
+                        className="w-full h-auto object-contain"
+                        style={{ maxHeight: '500px' }}
+                      />
+                      {/* Play button overlay */}
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center">
+                          <Play className="w-8 h-8 text-black ml-1" />
                         </div>
-                      )}
+                      </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={async () => {
-                        if (!confirm('Remove this video? It will be deleted from Bunny.net.')) {
-                          return;
-                        }
-
-                        try {
-                          // Delete from Bunny.net if we have a video ID
-                          if (videoId) {
-                            await fetch('/api/media/delete', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ videoId }),
-                            });
+                    
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
+                      {videoId && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedThumbnail(videoThumbnail);
+                            setShowThumbnailPicker(true);
+                          }}
+                          className="flex-1"
+                        >
+                          <ImageIcon className="w-4 h-4 mr-2" />
+                          Change Thumbnail
+                        </Button>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          if (!confirm('Remove this video? It will be deleted from Bunny.net.')) {
+                            return;
                           }
 
-                          // Clear from profile
-                          updateField("videoUrl", "");
-                          setVideoThumbnail("");
-                          setVideoId("");
-                        } catch (error) {
-                          console.error('Error deleting video:', error);
-                          alert('Video removed from profile, but may still exist in Bunny.net');
-                          // Still clear from profile even if delete fails
-                          updateField("videoUrl", "");
-                          setVideoThumbnail("");
-                          setVideoId("");
-                        }
-                      }}
-                      className="w-full"
-                    >
-                      <X className="w-4 h-4 mr-2" />
-                      Remove Video
-                    </Button>
+                          try {
+                            if (videoId) {
+                              await fetch('/api/media/delete', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ videoId }),
+                              });
+                            }
+
+                            updateField("videoUrl", "");
+                            setVideoThumbnail("");
+                            setVideoId("");
+                          } catch (error) {
+                            console.error('Error deleting video:', error);
+                            alert('Video removed from profile, but may still exist in Bunny.net');
+                            updateField("videoUrl", "");
+                            setVideoThumbnail("");
+                            setVideoId("");
+                          }
+                        }}
+                        className="flex-1"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Remove Video
+                      </Button>
+                    </div>
                   </div>
                 ) : isUploadingVideo ? (
                   <div className="border-2 border-dashed border-border rounded-lg p-6">
@@ -483,12 +473,10 @@ export function ProfileEditor({ profileId, initialData, neighborhoods = [] }: Pr
                           setUploadProgress(0);
                           
                           try {
-                            // Upload to Bunny.net with progress tracking
                             const formData = new FormData();
                             formData.append('video', file);
                             formData.append('title', `${data.name || 'Agent'} Profile Video`);
 
-                            // Use XMLHttpRequest for progress tracking
                             const xhr = new XMLHttpRequest();
                             
                             xhr.upload.addEventListener('progress', (e) => {
@@ -517,19 +505,12 @@ export function ProfileEditor({ profileId, initialData, neighborhoods = [] }: Pr
 
                             const result = await uploadPromise;
                             
-                            console.log('Upload result:', result);
-                            console.log('Thumbnail URL:', result.thumbnailUrl);
-                            console.log('Video ID:', result.videoId);
-                            
-                            // Store the HLS URL for playback
+                            // Store all video data
                             updateField("videoUrl", result.hlsUrl);
-                            
-                            // Store thumbnail and video ID
                             setVideoThumbnail(result.thumbnailUrl);
                             setVideoId(result.videoId);
                             
                             setIsUploadingVideo(false);
-                            alert('✓ Video uploaded successfully to Bunny.net!');
                             
                           } catch (error) {
                             console.error('Video upload error:', error);
@@ -1038,6 +1019,93 @@ export function ProfileEditor({ profileId, initialData, neighborhoods = [] }: Pr
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Video Player Dialog */}
+      <Dialog open={showVideoPlayer} onOpenChange={setShowVideoPlayer}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Video Preview</DialogTitle>
+          </DialogHeader>
+          <div className="aspect-video bg-black rounded-lg overflow-hidden">
+            {data.videoUrl && (
+              <HLSVideoPlayer
+                src={data.videoUrl}
+                autoPlay
+                className="w-full h-full"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Thumbnail Picker Dialog */}
+      <Dialog open={showThumbnailPicker} onOpenChange={setShowThumbnailPicker}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Select Video Thumbnail</DialogTitle>
+            <DialogDescription>
+              Choose which frame to use as the video thumbnail
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 py-4">
+            {videoId && getBunnyThumbnailOptions(videoId).map((option) => (
+              <button
+                key={option.url}
+                onClick={() => setSelectedThumbnail(option.url)}
+                className={`relative group rounded-lg overflow-hidden border-2 transition-all ${
+                  selectedThumbnail === option.url
+                    ? 'border-primary ring-4 ring-primary/20 shadow-lg'
+                    : 'border-border hover:border-primary/50 hover:shadow-md'
+                }`}
+              >
+                <div className="aspect-[9/16] bg-muted">
+                  <img
+                    src={option.url}
+                    alt={`Thumbnail at ${option.timestamp}`}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+
+                {selectedThumbnail === option.url && (
+                  <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                    <div className="bg-primary text-primary-foreground rounded-full p-3">
+                      <Check className="w-8 h-8" />
+                    </div>
+                  </div>
+                )}
+
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent px-4 py-3">
+                  <p className="text-sm text-white font-semibold">{option.label}</p>
+                  <p className="text-sm text-white/80">{option.timestamp}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSelectedThumbnail(videoThumbnail);
+                setShowThumbnailPicker(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                setVideoThumbnail(selectedThumbnail);
+                setShowThumbnailPicker(false);
+              }}
+              disabled={selectedThumbnail === videoThumbnail}
+            >
+              Save Thumbnail
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

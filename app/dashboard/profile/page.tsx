@@ -70,6 +70,8 @@ export default async function ProfilePage() {
               bio: profile?.bio || "",
               bioLong: profile?.bioLong || "",
               videoUrl: profile?.videoUrl || "",
+              videoId: profile?.videoId || "",
+              videoThumbnail: profile?.videoThumbnail || "",
               email: profile?.email || session.user.email || "",
               phone: profile?.phone || "",
               whatsapp: profile?.whatsapp || "",

@@ -89,7 +89,9 @@ export const agentProfiles = pgTable('agent_profiles', {
   photoUrl: text('photo_url'),
   bio: text('bio'), // Short bio (2-3 sentences)
   bioLong: text('bio_long'), // Long bio for About section
-  videoUrl: text('video_url'), // Video introduction (YouTube/Vimeo)
+  videoUrl: text('video_url'), // Video introduction HLS URL from Bunny.net
+  videoId: text('video_id'), // Bunny.net video GUID
+  videoThumbnail: text('video_thumbnail'), // Bunny.net thumbnail URL
   phone: varchar('phone', { length: 20 }),
   whatsapp: varchar('whatsapp', { length: 20 }),
   email: text('email'),
