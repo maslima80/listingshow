@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { PlusCircle, Users, Palette, CreditCard, LayoutGrid, UserCircle, ExternalLink, Eye } from "lucide-react";
+import { PlusCircle, Users, Palette, CreditCard, LayoutGrid, UserCircle, ExternalLink, Eye, MapPin, Star, Download } from "lucide-react";
 import { PropertyCard } from "@/components/property-card";
 import { DashboardClientWrapper } from "@/components/dashboard-client";
 import { LeadsCard } from "@/components/leads-card";
@@ -101,13 +101,75 @@ export default async function DashboardPage() {
                 </div>
                 <CardTitle>Your Hub</CardTitle>
                 <CardDescription>
-                  Edit your link-in-bio page with drag & drop blocks
+                  Build your link-in-bio page with premium blocks
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button variant="outline" className="w-full" disabled>
-                  Coming Soon
-                </Button>
+                <Link href="/dashboard/hub">
+                  <Button className="w-full">
+                    Build Hub
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Neighborhoods */}
+            <Card className="group hover:shadow-lg transition-all duration-200 border-2 hover:border-teal-200">
+              <CardHeader>
+                <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-teal-200 transition-colors">
+                  <MapPin className="w-6 h-6 text-teal-600" />
+                </div>
+                <CardTitle>Neighborhoods</CardTitle>
+                <CardDescription>
+                  Showcase areas you serve with photos & videos
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href="/dashboard/neighborhoods">
+                  <Button variant="outline" className="w-full">
+                    Manage Neighborhoods
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Testimonials */}
+            <Card className="group hover:shadow-lg transition-all duration-200 border-2 hover:border-yellow-200">
+              <CardHeader>
+                <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-yellow-200 transition-colors">
+                  <Star className="w-6 h-6 text-yellow-600" />
+                </div>
+                <CardTitle>Testimonials</CardTitle>
+                <CardDescription>
+                  Collect and display client reviews
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href="/dashboard/testimonials">
+                  <Button variant="outline" className="w-full">
+                    Manage Testimonials
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Resources */}
+            <Card className="group hover:shadow-lg transition-all duration-200 border-2 hover:border-indigo-200">
+              <CardHeader>
+                <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-indigo-200 transition-colors">
+                  <Download className="w-6 h-6 text-indigo-600" />
+                </div>
+                <CardTitle>Resources</CardTitle>
+                <CardDescription>
+                  Lead magnets & downloadable guides
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href="/dashboard/resources">
+                  <Button variant="outline" className="w-full">
+                    Manage Resources
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
 

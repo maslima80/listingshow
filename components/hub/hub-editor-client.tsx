@@ -7,20 +7,12 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Plus, Loader2 } from 'lucide-react'
 import { SortableBlockItem } from './sortable-block-item'
-import { AddBlockDialog } from './add-block-dialog-new'
+import { AddBlockDialog } from './add-block-dialog'
 import { HubPreview } from './hub-preview'
 import { useToast } from '@/hooks/use-toast'
+import { HubBlock, HubBlockType } from '@/lib/types/hub-blocks'
 
-interface Block {
-  id: string
-  type: 'property' | 'link' | 'image' | 'video' | 'text'
-  title?: string | null
-  subtitle?: string | null
-  url?: string | null
-  mediaUrl?: string | null
-  propertyId?: string | null
-  position: number
-  isVisible: boolean
+interface Block extends HubBlock {
   property?: {
     id: string
     title: string
@@ -338,15 +330,6 @@ export function HubEditorClient({ teamSlug, accentColor, themeMode, backgroundCo
         open={addDialogOpen}
         onOpenChange={setAddDialogOpen}
         onAdd={handleAddBlock}
-      />
-
-      {/* Edit Block Dialog */}
-      <AddBlockDialog
-        open={!!editingBlock}
-        onOpenChange={(open) => !open && setEditingBlock(null)}
-        onAdd={handleAddBlock}
-        onUpdate={handleUpdateBlock}
-        editBlock={editingBlock}
       />
     </div>
   )
