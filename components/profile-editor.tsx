@@ -69,6 +69,9 @@ export function ProfileEditor({ profileId, initialData, neighborhoods = [] }: Pr
   const [isInitialMount, setIsInitialMount] = useState(true);
   const [newCredential, setNewCredential] = useState("");
   const [videoThumbnail, setVideoThumbnail] = useState<string>("");
+  const [videoId, setVideoId] = useState<string>("");
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   useEffect(() => {
     if (isInitialMount) {
@@ -342,34 +345,120 @@ export function ProfileEditor({ profileId, initialData, neighborhoods = [] }: Pr
               <div className="space-y-3">
                 {data.videoUrl ? (
                   <div className="space-y-3">
-                    <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+                    <div className="relative bg-black rounded-lg overflow-hidden mx-auto max-w-full flex items-center justify-center min-h-[200px]">
                       {videoThumbnail ? (
-                        <img
-                          src={videoThumbnail}
-                          alt="Video thumbnail"
-                          className="w-full h-full object-cover"
-                        />
+                        <>
+                          <img
+                            src={`${videoThumbnail}?t=${Date.now()}`}
+                            alt="Video thumbnail"
+                            className="max-w-full h-auto object-contain"
+                            style={{ maxHeight: '500px' }}
+                            onLoad={(e) => {
+                              // Detect aspect ratio from thumbnail
+                              const img = e.currentTarget;
+                              const isVertical = img.naturalHeight > img.naturalWidth;
+                              if (isVertical) {
+                                img.style.maxWidth = '400px';
+                                img.style.margin = '0 auto';
+                              }
+                            }}
+                            onError={(e) => {
+                              const img = e.currentTarget;
+                              const currentSrc = img.src;
+                              
+                              // Retry up to 5 times with increasing delays
+                              const retryCount = parseInt(img.dataset.retryCount || '0');
+                              if (retryCount < 5) {
+                                console.log(`Thumbnail not ready, retry ${retryCount + 1}/5...`);
+                                img.dataset.retryCount = String(retryCount + 1);
+                                
+                                // Wait longer each time: 2s, 4s, 6s, 8s, 10s
+                                setTimeout(() => {
+                                  img.src = `${videoThumbnail}?t=${Date.now()}`;
+                                }, (retryCount + 1) * 2000);
+                              } else {
+                                console.error('Thumbnail failed to load after 5 retries:', videoThumbnail);
+                                // Show fallback
+                                img.style.display = 'none';
+                                const fallback = img.parentElement?.querySelector('.fallback-message');
+                                if (fallback) {
+                                  (fallback as HTMLElement).style.display = 'block';
+                                }
+                              }
+                            }}
+                          />
+                          <div className="fallback-message text-center p-8" style={{ display: 'none' }}>
+                            <Video className="w-12 h-12 mx-auto mb-2 text-muted-foreground" />
+                            <p className="text-sm text-muted-foreground">Video uploaded successfully</p>
+                            <p className="text-xs text-muted-foreground mt-1">Thumbnail still processing...</p>
+                          </div>
+                        </>
                       ) : (
-                        <video
-                          src={data.videoUrl}
-                          controls
-                          poster={videoThumbnail}
-                          className="w-full h-full"
-                        />
+                        <div className="text-center p-8">
+                          <Video className="w-12 h-12 mx-auto mb-2 text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground">Video uploaded</p>
+                          <p className="text-xs text-muted-foreground mt-1">Thumbnail loading...</p>
+                        </div>
                       )}
                     </div>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        updateField("videoUrl", "");
-                        setVideoThumbnail("");
+                      onClick={async () => {
+                        if (!confirm('Remove this video? It will be deleted from Bunny.net.')) {
+                          return;
+                        }
+
+                        try {
+                          // Delete from Bunny.net if we have a video ID
+                          if (videoId) {
+                            await fetch('/api/media/delete', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ videoId }),
+                            });
+                          }
+
+                          // Clear from profile
+                          updateField("videoUrl", "");
+                          setVideoThumbnail("");
+                          setVideoId("");
+                        } catch (error) {
+                          console.error('Error deleting video:', error);
+                          alert('Video removed from profile, but may still exist in Bunny.net');
+                          // Still clear from profile even if delete fails
+                          updateField("videoUrl", "");
+                          setVideoThumbnail("");
+                          setVideoId("");
+                        }
                       }}
                       className="w-full"
                     >
                       <X className="w-4 h-4 mr-2" />
                       Remove Video
                     </Button>
+                  </div>
+                ) : isUploadingVideo ? (
+                  <div className="border-2 border-dashed border-border rounded-lg p-6">
+                    <div className="space-y-4">
+                      <div className="text-center">
+                        <Loader2 className="w-12 h-12 mx-auto mb-3 text-primary animate-spin" />
+                        <p className="text-sm font-medium mb-2">
+                          Uploading to Bunny.net...
+                        </p>
+                        <div className="max-w-xs mx-auto">
+                          <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                            <div 
+                              className="bg-primary h-full transition-all duration-300"
+                              style={{ width: `${uploadProgress}%` }}
+                            />
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            {uploadProgress}% complete
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 ) : (
                   <div className="border-2 border-dashed border-border rounded-lg p-6">
@@ -390,38 +479,62 @@ export function ProfileEditor({ profileId, initialData, neighborhoods = [] }: Pr
                           const file = e.target.files?.[0];
                           if (!file) return;
 
-                          // Show loading state
-                          const loadingToast = document.createElement('div');
-                          loadingToast.textContent = 'Uploading to Bunny.net...';
+                          setIsUploadingVideo(true);
+                          setUploadProgress(0);
                           
                           try {
-                            // Upload to Bunny.net
+                            // Upload to Bunny.net with progress tracking
                             const formData = new FormData();
-                            formData.append('video', file); // API expects 'video' not 'file'
+                            formData.append('video', file);
                             formData.append('title', `${data.name || 'Agent'} Profile Video`);
 
-                            const response = await fetch('/api/upload/video', {
-                              method: 'POST',
-                              body: formData,
+                            // Use XMLHttpRequest for progress tracking
+                            const xhr = new XMLHttpRequest();
+                            
+                            xhr.upload.addEventListener('progress', (e) => {
+                              if (e.lengthComputable) {
+                                const percentComplete = Math.round((e.loaded / e.total) * 100);
+                                setUploadProgress(percentComplete);
+                              }
                             });
 
-                            if (!response.ok) {
-                              const errorData = await response.json();
-                              throw new Error(errorData.error || 'Upload failed');
-                            }
+                            const uploadPromise = new Promise<any>((resolve, reject) => {
+                              xhr.addEventListener('load', () => {
+                                if (xhr.status >= 200 && xhr.status < 300) {
+                                  resolve(JSON.parse(xhr.responseText));
+                                } else {
+                                  reject(new Error(xhr.responseText || 'Upload failed'));
+                                }
+                              });
+                              
+                              xhr.addEventListener('error', () => {
+                                reject(new Error('Network error during upload'));
+                              });
 
-                            const result = await response.json();
+                              xhr.open('POST', '/api/upload/video');
+                              xhr.send(formData);
+                            });
+
+                            const result = await uploadPromise;
+                            
+                            console.log('Upload result:', result);
+                            console.log('Thumbnail URL:', result.thumbnailUrl);
+                            console.log('Video ID:', result.videoId);
                             
                             // Store the HLS URL for playback
                             updateField("videoUrl", result.hlsUrl);
                             
-                            // Store thumbnail separately for display
+                            // Store thumbnail and video ID
                             setVideoThumbnail(result.thumbnailUrl);
+                            setVideoId(result.videoId);
                             
+                            setIsUploadingVideo(false);
                             alert('✓ Video uploaded successfully to Bunny.net!');
                             
                           } catch (error) {
                             console.error('Video upload error:', error);
+                            setIsUploadingVideo(false);
+                            setUploadProgress(0);
                             alert(`Failed to upload video: ${error instanceof Error ? error.message : 'Unknown error'}`);
                           }
                         }}
