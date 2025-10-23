@@ -1,0 +1,1 @@
+ALTER TABLE "agent_profiles" ADD COLUMN "use_internal_scheduling" boolean DEFAULT false NOT NULL;

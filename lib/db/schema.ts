@@ -93,7 +93,8 @@ export const agentProfiles = pgTable('agent_profiles', {
   phone: varchar('phone', { length: 20 }),
   whatsapp: varchar('whatsapp', { length: 20 }),
   email: text('email'),
-  calendlyUrl: text('calendly_url'), // Scheduling link
+  calendlyUrl: text('calendly_url'), // Scheduling link (optional)
+  useInternalScheduling: boolean('use_internal_scheduling').default(false).notNull(), // Use our Light CRM instead of Calendly
   socialLinks: jsonb('social_links'), // { instagram, facebook, linkedin, youtube, tiktok, website }
   statsJson: jsonb('stats_json'), // { years_in_business, homes_sold, volume }
   credentials: jsonb('credentials'), // Array of certifications/awards

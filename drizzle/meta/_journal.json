@@ -43,6 +43,13 @@
       "when": 1761214748354,
       "tag": "0005_square_shotgun",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1761218325970,
+      "tag": "0006_flimsy_blizzard",
+      "breakpoints": true
     }
   ]
 }
