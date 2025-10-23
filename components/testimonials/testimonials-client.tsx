@@ -138,22 +138,41 @@ export function TestimonialsClient() {
   return (
     <>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="flex items-center justify-between mb-6">
-          <TabsList>
-            <TabsTrigger value="approved">
+        {/* Mobile-friendly header */}
+        <div className="space-y-4 mb-6">
+          {/* Tabs */}
+          <TabsList className="w-full grid grid-cols-3">
+            <TabsTrigger value="approved" className="text-xs sm:text-sm">
               Approved {approvedCount > 0 && `(${approvedCount})`}
             </TabsTrigger>
-            <TabsTrigger value="pending">
+            <TabsTrigger value="pending" className="text-xs sm:text-sm">
               Pending {pendingCount > 0 && `(${pendingCount})`}
             </TabsTrigger>
-            <TabsTrigger value="request">Request New</TabsTrigger>
+            <TabsTrigger value="request" className="text-xs sm:text-sm">
+              Request
+            </TabsTrigger>
           </TabsList>
 
+          {/* Action Buttons - Always visible on mobile */}
           {activeTab !== 'request' && (
-            <Button onClick={() => setAddDialogOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Manually
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => setAddDialogOpen(true)}
+                className="flex-1 sm:flex-none"
+                size="default"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Manually
+              </Button>
+              <Button 
+                onClick={() => setActiveTab('request')}
+                variant="outline"
+                className="flex-1 sm:flex-none"
+                size="default"
+              >
+                Request New
+              </Button>
+            </div>
           )}
         </div>
 
