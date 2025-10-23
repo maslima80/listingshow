@@ -7,7 +7,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Building2, Link as LinkIcon, Image, Video, FileText } from 'lucide-react'
+import { 
+  Building2, Link as LinkIcon, Image, Video, FileText, Sparkles, User, Home,
+  MapPin, Star, DollarSign, Download, Phone, Share2, Minus
+} from 'lucide-react'
+import { BLOCK_METADATA, BLOCK_CATEGORIES } from '@/lib/types/hub-blocks'
 
 interface Property {
   id: string
@@ -22,13 +26,19 @@ interface AddBlockDialogProps {
   onAdd: (blockData: any) => void
 }
 
-const blockTypes = [
-  { value: 'property', label: 'Property', icon: Building2, description: 'Showcase a property listing' },
-  { value: 'link', label: 'Link', icon: LinkIcon, description: 'Add a clickable link' },
-  { value: 'text', label: 'Text', icon: FileText, description: 'Add a text block' },
-  { value: 'image', label: 'Image', icon: Image, description: 'Add an image' },
-  { value: 'video', label: 'Video', icon: Video, description: 'Embed a video' },
-]
+const iconMap: Record<string, any> = {
+  Sparkles, User, Home, MapPin, Star, FileText, DollarSign, Download, Phone, Share2,
+  Building: Building2, Link: LinkIcon, Image, Video, Type: FileText, Minus
+}
+
+// Group blocks by category
+const blocksByCategory = Object.values(BLOCK_METADATA).reduce((acc, block) => {
+  if (!acc[block.category]) {
+    acc[block.category] = []
+  }
+  acc[block.category].push(block)
+  return acc
+}, {} as Record<string, typeof BLOCK_METADATA[keyof typeof BLOCK_METADATA][]>)
 
 export function AddBlockDialog({ open, onOpenChange, onAdd }: AddBlockDialogProps) {
   const [step, setStep] = useState<'type' | 'details'>('type')
@@ -62,12 +72,23 @@ export function AddBlockDialog({ open, onOpenChange, onAdd }: AddBlockDialogProp
 
   const handleSelectType = (type: string) => {
     setSelectedType(type)
-    setStep('details')
+    
+    // Premium blocks don't need configuration - add immediately
+    const premiumBlocks = ['hero', 'about', 'properties', 'neighborhoods', 'testimonials', 
+                          'valuation', 'lead_magnet', 'contact', 'social_footer']
+    
+    if (premiumBlocks.includes(type)) {
+      onAdd({ type })
+      handleClose()
+    } else {
+      setStep('details')
+    }
   }
 
   const handleSubmit = () => {
     const blockData: any = { type: selectedType }
 
+    // Legacy blocks need specific data
     if (selectedType === 'property') {
       blockData.propertyId = formData.propertyId
     } else if (selectedType === 'link') {
@@ -83,6 +104,8 @@ export function AddBlockDialog({ open, onOpenChange, onAdd }: AddBlockDialogProp
       blockData.title = formData.title
       blockData.url = formData.url
     }
+    // Premium blocks (hero, about, properties, etc.) don't need config on creation
+    // They pull data automatically from profile/managers
 
     onAdd(blockData)
     handleClose()
@@ -112,10 +135,10 @@ export function AddBlockDialog({ open, onOpenChange, onAdd }: AddBlockDialogProp
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {step === 'type' ? 'Add Block' : `Add ${blockTypes.find(t => t.value === selectedType)?.label}`}
+            {step === 'type' ? 'Add Block' : `Add ${BLOCK_METADATA[selectedType as keyof typeof BLOCK_METADATA]?.label}`}
           </DialogTitle>
           <DialogDescription>
             {step === 'type' 
@@ -126,25 +149,34 @@ export function AddBlockDialog({ open, onOpenChange, onAdd }: AddBlockDialogProp
         </DialogHeader>
 
         {step === 'type' && (
-          <div className="grid gap-3 py-4">
-            {blockTypes.map((type) => {
-              const Icon = type.icon
-              return (
-                <button
-                  key={type.value}
-                  onClick={() => handleSelectType(type.value)}
-                  className="flex items-start gap-4 p-4 rounded-lg border-2 border-slate-200 hover:border-slate-900 hover:bg-slate-50 transition-all text-left"
-                >
-                  <div className="h-10 w-10 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
-                    <Icon className="h-5 w-5 text-slate-700" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-medium mb-1">{type.label}</h3>
-                    <p className="text-sm text-slate-600">{type.description}</p>
-                  </div>
-                </button>
-              )
-            })}
+          <div className="space-y-6 py-4">
+            {Object.entries(blocksByCategory).map(([category, blocks]) => (
+              <div key={category}>
+                <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wide">
+                  {BLOCK_CATEGORIES[category as keyof typeof BLOCK_CATEGORIES]}
+                </h3>
+                <div className="grid gap-2">
+                  {blocks.map((block) => {
+                    const Icon = iconMap[block.icon] || FileText
+                    return (
+                      <button
+                        key={block.type}
+                        onClick={() => handleSelectType(block.type)}
+                        className="flex items-start gap-3 p-3 rounded-lg border-2 border-border hover:border-primary hover:bg-accent transition-all text-left"
+                      >
+                        <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium mb-0.5">{block.label}</h4>
+                          <p className="text-sm text-muted-foreground line-clamp-1">{block.description}</p>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         )}
 

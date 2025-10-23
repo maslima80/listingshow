@@ -118,13 +118,110 @@
 
 ---
 
-### 🔄 Sprint 2: Core Blocks (Week 3-4)
-**Status:** Not Started
+### ✅ Sprint 2: Core Blocks (Week 3-4) - **COMPLETE!** 🎉
+**Status:** ✅ COMPLETE
+**Goal:** Wire up all managers to Hub with premium block renderers
 
-- [ ] Enhance hub_blocks schema with settings_json
-- [ ] Build block renderers (Hero, About, Properties, etc.)
-- [ ] Home Valuation form block
-- [ ] Lead Magnet block
+#### Phase 1: Block Type Expansion ✅ COMPLETE
+- [x] 2.1 Expand hub_block_type enum
+  - [x] Add 'hero' block type
+  - [x] Add 'about' block type
+  - [x] Add 'properties' block type
+  - [x] Add 'neighborhoods' block type
+  - [x] Add 'testimonials' block type
+  - [x] Add 'blog' block type (placeholder)
+  - [x] Add 'valuation' block type
+  - [x] Add 'mortgage' block type (placeholder)
+  - [x] Add 'lead_magnet' block type
+  - [x] Add 'contact' block type
+  - [x] Add 'social_footer' block type
+  - [x] Already in schema - no migration needed!
+
+#### Phase 2: Block Renderer Components ✅ COMPLETE
+- [x] 2.2 Create HeroBlock
+  - [x] Component with video/image background
+  - [x] Pull from profile (name, tagline, photo)
+  - [x] CTA button support
+  - [x] Settings interface
+- [x] 2.3 Create AboutBlock
+  - [x] Profile photo + bio display
+  - [x] Video intro player
+  - [x] Stats display (years, homes sold, volume)
+  - [x] Credentials badges
+  - [x] Settings interface
+- [x] 2.4 Create PropertiesBlock
+  - [x] Fetch from properties API
+  - [x] Carousel/grid layout options
+  - [x] Filter by status (for sale, rent, coming soon)
+  - [x] Property card design
+  - [x] Settings interface
+- [x] 2.5 Create NeighborhoodsBlock
+  - [x] Fetch from neighborhoods API
+  - [x] Card layout with cover images
+  - [x] Hover effects
+  - [x] Link to neighborhood detail pages
+  - [x] Settings interface
+- [x] 2.6 Create TestimonialsBlock
+  - [x] Fetch from testimonials API (approved only)
+  - [x] Auto-rotating carousel
+  - [x] Star ratings display
+  - [x] Client photos
+  - [x] Settings interface
+- [x] 2.7 Create ContactBlock
+  - [x] Multi-method contact (phone, email, WhatsApp)
+  - [x] Calendar booking integration
+  - [x] Contact form
+  - [x] Settings interface
+- [x] 2.8 Create ValuationBlock
+  - [x] Home valuation lead capture form
+  - [x] Split design (image + form)
+  - [x] Lead submission to CRM
+  - [x] Settings interface
+- [x] 2.9 Create LeadMagnetBlock
+  - [x] Fetch from resources API
+  - [x] Resource selection dropdown
+  - [x] Lead capture form
+  - [x] Download trigger
+  - [x] Settings interface
+- [x] 2.10 Create SocialFooterBlock
+  - [x] Social media links
+  - [x] Brokerage disclosure
+  - [x] Powered by badge
+  - [x] Settings interface
+
+#### Phase 3: Block Settings System ✅ COMPLETE
+- [x] 2.11 Create block settings types
+  - [x] TypeScript interfaces for all block settings
+  - [x] Settings JSON schema validation
+  - [x] Default settings for each block type
+- [x] 2.12 Block metadata registry
+  - [x] Block categories (Hero, Content, Lead Gen, etc.)
+  - [x] Block icons
+  - [x] Block descriptions
+  - [x] All in /lib/types/hub-blocks.ts
+
+#### Phase 4: Hub Builder Integration ✅ COMPLETE
+- [x] 2.13 Update Add Block Dialog
+  - [x] Categorized block selection (Essential, Lead Gen, Content, Tools, Custom)
+  - [x] Block previews/icons
+  - [x] Block descriptions
+  - [x] Auto-add premium blocks (no config needed)
+- [ ] 2.14 Block Settings Panel (Future Enhancement)
+  - [ ] Dynamic settings UI per block type
+  - [ ] Real-time preview updates
+  - [ ] Save settings to settingsJson
+  - [ ] Note: Blocks currently use default settings and auto-pull data
+- [x] 2.15 Block Renderer Factory
+  - [x] Central BlockRenderer component exists
+  - [x] Routes blocks to correct renderer
+  - [x] Handles legacy blocks (property, link, image, video, text)
+
+#### Phase 5: Public Page Updates ✅ COMPLETE
+- [x] 2.16 Update PublicHubClient
+  - [x] Uses BlockRenderer for all blocks
+  - [x] Theme inheritance (accent color, dark/light)
+  - [x] Responsive animations
+  - [x] Mobile optimization
 
 ---
 
@@ -151,9 +248,11 @@
 
 ## 🎯 Current Focus
 
-**🎉 SPRINT 1 & 1.5 COMPLETE! 🎉**
+**🎉 SPRINT 1, 1.5 & 2 COMPLETE! 🎉**
 
-**Next Up:** Sprint 2 - Core Blocks & Public Pages
+**Status:** All managers built, all blocks wired up, Hub is LIVE and functional!
+
+**Next Up:** Sprint 3 - Wizard & Templates (Optional Enhancement)
 
 **Completed Today:**
 - ✅ Created database schemas for all 3 managers (Neighborhoods, Testimonials, Resources)
