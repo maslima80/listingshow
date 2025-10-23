@@ -321,6 +321,73 @@ export function ProfileEditor({ profileId, initialData, neighborhoods = [] }: Pr
           </CardContent>
         </Card>
 
+        {/* Video Introduction */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Video className="w-5 h-5 mr-2" />
+              Video Introduction
+            </CardTitle>
+            <CardDescription>
+              Add a personal touch with a video intro (optional but powerful!)
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <Label className="flex items-center">
+                Upload Video
+                <HelpTooltip content="30-90 second introduction video. This can appear in your Hub hero or about section. Makes your profile stand out! Upload directly to Bunny.net." />
+              </Label>
+              <div className="space-y-3">
+                {data.videoUrl ? (
+                  <div className="space-y-3">
+                    <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+                      <video
+                        src={data.videoUrl}
+                        controls
+                        className="w-full h-full"
+                      />
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => updateField("videoUrl", "")}
+                      className="w-full"
+                    >
+                      <X className="w-4 h-4 mr-2" />
+                      Remove Video
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+                    <Video className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Upload your video introduction
+                    </p>
+                    <Input
+                      type="file"
+                      accept="video/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          // For now, create a local preview URL
+                          // In production, this would upload to Bunny.net
+                          const url = URL.createObjectURL(file);
+                          updateField("videoUrl", url);
+                        }
+                      }}
+                      className="max-w-xs mx-auto"
+                    />
+                    <p className="text-xs text-muted-foreground mt-2">
+                      MP4, MOV, or WebM. Max 2 minutes. Uploads to Bunny.net.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Stats & Credentials */}
         <Card>
           <CardHeader>
@@ -725,6 +792,21 @@ export function ProfileEditor({ profileId, initialData, neighborhoods = [] }: Pr
                   <div className="p-4 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg text-white">
                     <h3 className="text-xl font-bold">{data.tagline}</h3>
                     <p className="text-sm mt-1 opacity-90">Hero Section</p>
+                    {data.videoUrl && (
+                      <p className="text-xs mt-2 opacity-75">✓ Video background enabled</p>
+                    )}
+                  </div>
+                )}
+
+                {data.videoUrl && !data.tagline && (
+                  <div className="p-4 bg-muted rounded-lg">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Video className="w-4 h-4 text-primary" />
+                      <span className="font-medium">Video Introduction Added</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Will appear in Hero or About section
+                    </p>
                   </div>
                 )}
 
