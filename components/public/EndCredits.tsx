@@ -1,9 +1,9 @@
 "use client";
 
-import { User, Mail, Phone, Share2, Instagram, Facebook, Linkedin, Globe, MessageCircle } from "lucide-react";
+import { User, Mail, Phone, Share2, Instagram, Facebook, Linkedin, Globe, MessageCircle, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ContactFormMock } from "./ContactFormMock";
 import { ExternalLinks } from "./ExternalLinks";
+import { BottomContactForm } from "./BottomContactForm";
 
 interface Agent {
   id: string;
@@ -25,14 +25,16 @@ interface ExternalLink {
 }
 
 interface EndCreditsProps {
+  propertyId: string;
   agents: Agent[];
   propertyTitle: string;
   accentColor: string;
   externalLinks?: ExternalLink[];
   onShare: () => void;
+  onContactClick?: () => void;
 }
 
-export function EndCredits({ agents, propertyTitle, accentColor, externalLinks, onShare }: EndCreditsProps) {
+export function EndCredits({ propertyId, agents, propertyTitle, accentColor, externalLinks, onShare, onContactClick }: EndCreditsProps) {
   const handleEmail = (email: string) => {
     window.location.href = `mailto:${email}`;
   };
@@ -234,11 +236,61 @@ export function EndCredits({ agents, propertyTitle, accentColor, externalLinks, 
                 <ExternalLinks links={externalLinks} accentColor={accentColor} />
               </div>
             )}
+
+            {/* Bottom Contact Form */}
+            <div className="mt-8">
+              <BottomContactForm
+                propertyId={propertyId}
+                propertyTitle={propertyTitle}
+                accentColor={accentColor}
+              />
+            </div>
           </div>
 
-          {/* Right: Contact Form (Desktop Sticky) */}
+          {/* Right: Contact Card (Desktop Sticky) */}
           <div className="lg:sticky lg:top-24 lg:self-start">
-            <ContactFormMock propertyTitle={propertyTitle} accentColor={accentColor} />
+            <div className="bg-card rounded-xl border border-border p-6 shadow-lg">
+              <h3 className="text-xl font-bold mb-2">Interested in {propertyTitle}?</h3>
+              <p className="text-sm text-muted-foreground mb-6">
+                Schedule a tour or ask questions about this property
+              </p>
+              
+              <div className="space-y-3">
+                <Button
+                  onClick={onContactClick}
+                  className="w-full text-white font-semibold"
+                  style={{ backgroundColor: accentColor }}
+                  size="lg"
+                >
+                  <Calendar className="w-5 h-5 mr-2" />
+                  Schedule a Tour
+                </Button>
+                
+                {agents[0]?.phone && (
+                  <Button
+                    onClick={() => handleCall(agents[0].phone!)}
+                    variant="outline"
+                    className="w-full"
+                    size="lg"
+                  >
+                    <Phone className="w-5 h-5 mr-2" />
+                    Call Now
+                  </Button>
+                )}
+                
+                {agents[0]?.email && (
+                  <Button
+                    onClick={() => handleEmail(agents[0].email!)}
+                    variant="outline"
+                    className="w-full"
+                    size="lg"
+                  >
+                    <Mail className="w-5 h-5 mr-2" />
+                    Send Email
+                  </Button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

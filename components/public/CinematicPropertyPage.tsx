@@ -9,6 +9,8 @@ import { CinematicPlayer } from "./CinematicPlayer";
 import { Synopsis } from "./Synopsis";
 import { PhotoGallery } from "./PhotoGallery";
 import { EndCredits } from "./EndCredits";
+import { ScheduleTourModal } from "./ScheduleTourModal";
+import { Toaster } from "@/components/ui/toaster";
 
 interface Agent {
   id: string;
@@ -40,6 +42,9 @@ interface Photo {
 }
 
 interface CinematicPropertyPageProps {
+  // Property ID
+  propertyId: string;
+  
   // Hero
   heroPhoto: string;
   featuredVideo?: string | null;
@@ -79,6 +84,7 @@ interface CinematicPropertyPageProps {
 }
 
 export function CinematicPropertyPage({
+  propertyId,
   heroPhoto,
   featuredVideo,
   isHeroVideo,
@@ -106,6 +112,7 @@ export function CinematicPropertyPage({
   const [playerOpen, setPlayerOpen] = useState(false);
   const [playerIndex, setPlayerIndex] = useState(0);
   const [showFloatingButton, setShowFloatingButton] = useState(false);
+  const [scheduleTourOpen, setScheduleTourOpen] = useState(false);
   const contactRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
 
@@ -127,8 +134,8 @@ export function CinematicPropertyPage({
   };
 
   const handleScheduleTour = () => {
-    // Scroll to contact section
-    contactRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Open schedule tour modal
+    setScheduleTourOpen(true);
   };
 
   const handleShare = async () => {
@@ -257,34 +264,41 @@ export function CinematicPropertyPage({
       {/* 8. End Credits (Contact) */}
       <div ref={contactRef}>
         <EndCredits
+          propertyId={propertyId}
           agents={agents}
           propertyTitle={title}
           accentColor={accentColor}
           externalLinks={externalLinks || []}
           onShare={handleShare}
+          onContactClick={handleScheduleTour}
         />
       </div>
 
-      {/* Floating Contact Button (Mobile) - Smart: Call if phone available, Contact otherwise */}
+      {/* Floating Contact Button (Mobile) - Opens Schedule Tour Modal */}
       {videoChapters.length > 0 && showFloatingButton && (
         <button
-          onClick={() => {
-            if (primaryAgent?.phone) {
-              // If phone available, call directly
-              window.location.href = `tel:${primaryAgent.phone}`;
-            } else {
-              // Otherwise scroll to contact form
-              handleScheduleTour();
-            }
-          }}
+          onClick={handleScheduleTour}
           className="fixed bottom-6 right-6 lg:hidden px-5 py-3 rounded-full shadow-2xl flex items-center gap-2 text-white font-semibold text-sm z-40 hover:scale-105 transition-all animate-in slide-in-from-bottom duration-300"
           style={{ backgroundColor: accentColor }}
-          aria-label={primaryAgent?.phone ? "Call Agent" : "Contact Agent"}
+          aria-label="Schedule Tour"
         >
-          <span>📞</span>
-          <span>{primaryAgent?.phone ? "Call Agent" : "Contact Agent"}</span>
+          <span>📅</span>
+          <span>Schedule Tour</span>
         </button>
       )}
+
+      {/* Schedule Tour Modal */}
+      <ScheduleTourModal
+        open={scheduleTourOpen}
+        onOpenChange={setScheduleTourOpen}
+        propertyId={propertyId}
+        propertyTitle={title}
+        source="schedule_tour_cta"
+        type="tour_request"
+      />
+
+      {/* Toast Notifications */}
+      <Toaster />
     </>
   );
 }

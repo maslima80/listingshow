@@ -3,6 +3,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { uploadToImageKit } from "@/lib/imagekit";
 
+// Increase body size limit for this route
+export const runtime = 'nodejs'
+export const maxDuration = 60
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);

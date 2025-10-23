@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { PlusCircle, Users, Palette, CreditCard, LayoutGrid, UserCircle, ExternalLink, Eye } from "lucide-react";
 import { PropertyCard } from "@/components/property-card";
+import { DashboardClientWrapper } from "@/components/dashboard-client";
+import { LeadsCard } from "@/components/leads-card";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -34,30 +36,10 @@ export default async function DashboardPage() {
     .orderBy(desc(properties.createdAt));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
-      {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img 
-                src="/listin.show new logo.png" 
-                alt="Listing.Show" 
-                className="h-8 w-auto"
-              />
-              {session.user.teamSlug && (
-                <div className="text-xs text-muted-foreground border-l pl-3 ml-1">
-                  listing.show/u/{session.user.teamSlug}
-                </div>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-600">Welcome, {session.user.name}</span>
-            </div>
-          </div>
-        </div>
-      </header>
-
+    <DashboardClientWrapper 
+      userName={session.user.name || undefined}
+      teamSlug={session.user.teamSlug || undefined}
+    >
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto">
@@ -107,6 +89,9 @@ export default async function DashboardPage() {
                 </Link>
               </CardContent>
             </Card>
+
+            {/* Leads */}
+            <LeadsCard />
 
             {/* Your Hub */}
             <Card className="group hover:shadow-lg transition-all duration-200 border-2 hover:border-purple-200">
@@ -236,6 +221,6 @@ export default async function DashboardPage() {
           )}
         </div>
       </main>
-    </div>
+    </DashboardClientWrapper>
   );
 }

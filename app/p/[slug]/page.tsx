@@ -120,6 +120,9 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
   return (
     <div className={`min-h-screen ${themeMode === 'dark' ? 'dark' : ''}`}>
       <CinematicPropertyPage
+        // Property ID
+        propertyId={property.id}
+        
         // Hero
         heroPhoto={(heroMedia?.type === 'video' ? heroMedia?.thumbUrl : heroMedia?.url) || ''}
         featuredVideo={heroVideoUrl}

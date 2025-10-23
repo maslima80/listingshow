@@ -15,6 +15,34 @@
       "when": 1760711480289,
       "tag": "0001_magical_cassandra_nova",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1761208728871,
+      "tag": "0002_lazy_hercules",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1761209835641,
+      "tag": "0003_brave_namorita",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1761213460873,
+      "tag": "0004_nappy_venom",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1761214748354,
+      "tag": "0005_square_shotgun",
+      "breakpoints": true
     }
   ]
 }
