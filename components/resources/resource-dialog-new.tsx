@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2, Upload, X, FileText, Image as ImageIcon } from 'lucide-react'
+import { Loader2, Upload, X, FileText, Image as ImageIcon, Check } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 
 interface Resource {
@@ -73,22 +73,18 @@ export function ResourceDialog({ open, onOpenChange, resource, onSave }: Resourc
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       toast({
         title: 'Invalid file',
         description: 'Please upload an image file',
-        variant: 'destructive',
       })
       return
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast({
         title: 'File too large',
         description: 'Cover image must be under 5MB',
-        variant: 'destructive',
       })
       return
     }
@@ -118,35 +114,30 @@ export function ResourceDialog({ open, onOpenChange, resource, onSave }: Resourc
       toast({
         title: 'Upload failed',
         description: 'Failed to upload cover image',
-        variant: 'destructive',
       })
     } finally {
       setUploadingCover(false)
     }
   }
 
-  // Upload file (PDF/ZIP) to ImageKit
+  // Upload file (PDF/ZIP) - using ImageKit which supports non-image files
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Validate file type
     const allowedTypes = ['application/pdf', 'application/zip', 'application/x-zip-compressed']
     if (!allowedTypes.includes(file.type)) {
       toast({
         title: 'Invalid file type',
         description: 'Only PDF and ZIP files are allowed',
-        variant: 'destructive',
       })
       return
     }
 
-    // Validate file size (max 50MB)
     if (file.size > 50 * 1024 * 1024) {
       toast({
         title: 'File too large',
         description: 'File must be under 50MB',
-        variant: 'destructive',
       })
       return
     }
@@ -158,7 +149,6 @@ export function ResourceDialog({ open, onOpenChange, resource, onSave }: Resourc
       const formData = new FormData()
       formData.append('file', file)
 
-      // Use XMLHttpRequest for progress tracking
       const xhr = new XMLHttpRequest()
 
       xhr.upload.addEventListener('progress', (e) => {
@@ -195,7 +185,6 @@ export function ResourceDialog({ open, onOpenChange, resource, onSave }: Resourc
       toast({
         title: 'Upload failed',
         description: 'Failed to upload file',
-        variant: 'destructive',
       })
     } finally {
       setUploadingFile(false)
@@ -270,25 +259,26 @@ export function ResourceDialog({ open, onOpenChange, resource, onSave }: Resourc
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {resource ? 'Edit Resource' : 'Add Resource'}
+            {resource ? 'Edit Resource' : 'Add Resource / Lead Magnet'}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 mt-4">
+        <div className="space-y-6 mt-4">
           {/* Title */}
           <div className="space-y-2">
-            <Label htmlFor="title">Title *</Label>
+            <Label htmlFor="title">Resource Name *</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., First-Time Home Buyer's Guide"
+              className="text-base"
             />
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">Description (Optional)</Label>
             <Textarea
               id="description"
               value={description}
@@ -298,76 +288,171 @@ export function ResourceDialog({ open, onOpenChange, resource, onSave }: Resourc
             />
           </div>
 
-          {/* Cover Image */}
+          {/* Cover Image Upload */}
           <div className="space-y-2">
-            <Label htmlFor="coverImage">Cover Image URL (Optional)</Label>
-            <div className="flex gap-2">
-              <Input
-                id="coverImage"
-                value={coverImageUrl}
-                onChange={(e) => setCoverImageUrl(e.target.value)}
-                placeholder="https://..."
-              />
-              {coverImageUrl && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setCoverImageUrl('')}
-                >
-                  <X className="w-4 h-4" />
-                </Button>
+            <Label>Cover Image (Optional)</Label>
+            <div className="border-2 border-dashed rounded-lg p-6 text-center">
+              {coverImageUrl ? (
+                <div className="space-y-3">
+                  <div className="relative w-full h-48 rounded-md overflow-hidden">
+                    <img
+                      src={coverImageUrl}
+                      alt="Cover preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => coverInputRef.current?.click()}
+                      disabled={uploadingCover}
+                      className="flex-1"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Change Image
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCoverImageUrl('')}
+                      disabled={uploadingCover}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <ImageIcon className="w-12 h-12 mx-auto text-muted-foreground" />
+                  <div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => coverInputRef.current?.click()}
+                      disabled={uploadingCover}
+                    >
+                      {uploadingCover ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4 mr-2" />
+                          Upload Cover Image
+                        </>
+                      )}
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      PNG, JPG up to 5MB • Recommended: 1200x630px
+                    </p>
+                  </div>
+                </div>
               )}
+              <input
+                ref={coverInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleCoverUpload}
+                className="hidden"
+              />
             </div>
-            {coverImageUrl && (
-              <div className="relative w-full h-32 rounded-md overflow-hidden border">
-                <img
-                  src={coverImageUrl}
-                  alt="Cover preview"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-            <p className="text-xs text-muted-foreground">
-              Recommended: 1200x630px for best display
-            </p>
           </div>
 
-          {/* File URL */}
+          {/* File Upload */}
           <div className="space-y-2">
-            <Label htmlFor="fileUrl">File URL *</Label>
-            <Input
-              id="fileUrl"
-              value={fileUrl}
-              onChange={(e) => setFileUrl(e.target.value)}
-              placeholder="https://... (PDF, Google Drive, Dropbox, etc.)"
-            />
-            <p className="text-xs text-muted-foreground">
-              Direct link to PDF or file hosting service
-            </p>
-          </div>
-
-          {/* File Size */}
-          <div className="space-y-2">
-            <Label htmlFor="fileSize">File Size (bytes, optional)</Label>
-            <Input
-              id="fileSize"
-              type="number"
-              value={fileSize}
-              onChange={(e) => setFileSize(e.target.value)}
-              placeholder="e.g., 2048000 (for 2MB)"
-            />
-            <p className="text-xs text-muted-foreground">
-              Used for display only. 1 MB = 1,048,576 bytes
-            </p>
+            <Label>File to Download *</Label>
+            <div className="border-2 border-dashed rounded-lg p-6 text-center border-primary/50 bg-primary/5">
+              {fileUrl ? (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-center gap-3 p-4 bg-white rounded-lg">
+                    <FileText className="w-8 h-8 text-primary" />
+                    <div className="flex-1 text-left">
+                      <p className="font-medium truncate">{fileName}</p>
+                      <p className="text-sm text-muted-foreground">{formatFileSize(fileSize)}</p>
+                    </div>
+                    <Check className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingFile}
+                      className="flex-1"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Change File
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setFileUrl('')
+                        setFileName('')
+                        setFileSize(0)
+                      }}
+                      disabled={uploadingFile}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <FileText className="w-12 h-12 mx-auto text-primary" />
+                  <div>
+                    <Button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingFile}
+                      size="lg"
+                    >
+                      {uploadingFile ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4 mr-2" />
+                          Upload PDF or ZIP
+                        </>
+                      )}
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      PDF or ZIP up to 50MB
+                    </p>
+                  </div>
+                  {uploadingFile && uploadProgress > 0 && (
+                    <div className="space-y-2">
+                      <Progress value={uploadProgress} className="h-2" />
+                      <p className="text-sm text-muted-foreground">{uploadProgress}%</p>
+                    </div>
+                  )}
+                </div>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.zip"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+            </div>
           </div>
 
           {/* Active Toggle */}
-          <div className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
             <div>
-              <Label htmlFor="active" className="text-base">Active Resource</Label>
+              <Label htmlFor="active" className="text-base font-medium">Active Resource</Label>
               <p className="text-sm text-muted-foreground">
-                Make this resource available for download
+                Make this resource available for download on your Hub
               </p>
             </div>
             <Switch
@@ -376,28 +461,15 @@ export function ResourceDialog({ open, onOpenChange, resource, onSave }: Resourc
               onCheckedChange={setIsActive}
             />
           </div>
-
-          {/* Info Box */}
-          <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-            <h4 className="font-medium text-sm mb-2 text-blue-900 dark:text-blue-100">
-              💡 Lead Magnet Tips:
-            </h4>
-            <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-              <li>• Use compelling titles that highlight value</li>
-              <li>• Keep files under 5MB for faster downloads</li>
-              <li>• PDFs work best for guides and checklists</li>
-              <li>• Every download captures lead info (name, email, phone)</li>
-            </ul>
-          </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+        <DialogFooter className="mt-6">
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading || uploadingCover || uploadingFile}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={loading}>
+          <Button onClick={handleSave} disabled={loading || uploadingCover || uploadingFile || !fileUrl}>
             {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            {resource ? 'Update' : 'Create'}
+            {resource ? 'Update Resource' : 'Create Resource'}
           </Button>
         </DialogFooter>
       </DialogContent>

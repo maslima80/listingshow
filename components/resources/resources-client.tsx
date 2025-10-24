@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Plus, FileText, Download, Eye, EyeOff, Edit, Trash2, TrendingUp } from 'lucide-react'
-import { ResourceDialog } from './resource-dialog'
+import { ResourceDialog } from './resource-dialog-new'
 import { ResourceDetailsDialog } from './resource-details-dialog'
 import { useToast } from '@/hooks/use-toast'
 import {
