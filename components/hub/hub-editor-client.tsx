@@ -116,18 +116,38 @@ function getDefaultSettings(type: HubBlockType): HubBlockSettings | null {
       }
     case 'contact':
       return {
-        headline: 'Let\'s Talk Real Estate',
-        showPhone: true,
-        showEmail: true,
-        showSchedule: false,
-        showWhatsapp: false,
-        showContactForm: true,
-      }
-    case 'social_footer':
-      return {
-        socialLinks: {},
-        showBrokerageDisclosure: true,
-        showPoweredBy: true,
+        headline: 'Interested in working together?',
+        subline: 'Schedule a tour or ask a question.',
+        layout: 'buttons',
+        actions: {
+          showEmail: true,
+          showCall: true,
+          showSchedule: true,
+          showWhatsapp: false,
+        },
+        labels: {
+          email: 'Send Email',
+          call: 'Call',
+          schedule: 'Schedule a Visit',
+          whatsapp: 'WhatsApp',
+        },
+        form: {
+          show: true,
+          mode: 'modal',
+          requirePhone: false,
+          messagePlaceholder: 'I\'m interested in this…',
+          consentLabel: 'I agree to be contacted about real estate opportunities.',
+        },
+        schedule: {
+          enabled: true,
+          title: 'Request a time',
+          timeWindows: ['Morning', 'Afternoon', 'Evening'],
+          dateLabel: 'Preferred date',
+          noteLabel: 'Anything we should know?',
+        },
+        showSocialLinks: true,
+        showCompliance: true,
+        anchorId: 'contact',
       }
     case 'mortgage':
       return {

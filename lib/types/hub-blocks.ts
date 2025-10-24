@@ -15,7 +15,6 @@ export type HubBlockType =
   | 'mortgage'
   | 'lead_magnet'
   | 'contact'
-  | 'social_footer'
   | 'property'
   | 'link'
   | 'image'
@@ -179,32 +178,37 @@ export interface LeadMagnetBlockSettings {
 // Contact Block Settings
 export interface ContactBlockSettings {
   headline: string;
-  showPhone: boolean;
-  phone?: string;
-  showEmail: boolean;
-  email?: string;
-  showSchedule: boolean;
-  scheduleLink?: string;
-  showWhatsapp: boolean;
-  whatsapp?: string;
-  showContactForm: boolean;
-  backgroundColor?: string;
-}
-
-// Social Footer Block Settings
-export interface SocialFooterBlockSettings {
-  socialLinks: {
-    instagram?: string;
-    facebook?: string;
-    linkedin?: string;
-    youtube?: string;
-    tiktok?: string;
-    twitter?: string;
+  subline: string;
+  layout: 'buttons' | 'form' | 'buttons_form';
+  actions: {
+    showEmail: boolean;
+    showCall: boolean;
+    showSchedule: boolean;
+    showWhatsapp: boolean;
   };
-  showBrokerageDisclosure: boolean;
-  disclosureText?: string;
-  showPoweredBy: boolean;
-  backgroundColor?: string;
+  labels: {
+    email: string;
+    call: string;
+    schedule: string;
+    whatsapp: string;
+  };
+  form: {
+    show: boolean;
+    mode: 'modal' | 'inline';
+    requirePhone: boolean;
+    messagePlaceholder: string;
+    consentLabel?: string;
+  };
+  schedule: {
+    enabled: boolean;
+    title: string;
+    timeWindows: string[];
+    dateLabel: string;
+    noteLabel: string;
+  };
+  showSocialLinks: boolean;
+  showCompliance: boolean;
+  anchorId: string;
 }
 
 // Simple block types (existing)
@@ -251,7 +255,6 @@ export type HubBlockSettings =
   | MortgageBlockSettings
   | LeadMagnetBlockSettings
   | ContactBlockSettings
-  | SocialFooterBlockSettings
   | LinkBlockSettings
   | ImageBlockSettings
   | VideoBlockSettings
@@ -334,9 +337,10 @@ export const BLOCK_METADATA: Record<HubBlockType, BlockMetadata> = {
   blog: {
     type: 'blog',
     label: 'Blog Posts',
-    description: 'Share insights and market updates',
+    description: 'Coming soon - Share insights and market updates',
     icon: 'FileText',
     category: 'content',
+    isPremium: true,
   },
   valuation: {
     type: 'valuation',
@@ -364,13 +368,6 @@ export const BLOCK_METADATA: Record<HubBlockType, BlockMetadata> = {
     label: 'Contact',
     description: 'Phone, email, and scheduling',
     icon: 'Phone',
-    category: 'essential',
-  },
-  social_footer: {
-    type: 'social_footer',
-    label: 'Social Footer',
-    description: 'Social links and disclosures',
-    icon: 'Share2',
     category: 'essential',
   },
   property: {
