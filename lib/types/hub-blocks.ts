@@ -179,37 +179,12 @@ export interface LeadMagnetBlockSettings {
 export interface ContactBlockSettings {
   headline: string;
   subline: string;
-  layout: 'buttons' | 'form' | 'buttons_form';
-  actions: {
-    showEmail: boolean;
-    showCall: boolean;
-    showSchedule: boolean;
-    showWhatsapp: boolean;
-  };
-  labels: {
-    email: string;
-    call: string;
-    schedule: string;
-    whatsapp: string;
-  };
-  form: {
-    show: boolean;
-    mode: 'modal' | 'inline';
-    requirePhone: boolean;
-    messagePlaceholder: string;
-    consentLabel?: string;
-  };
-  schedule: {
-    enabled: boolean;
-    title: string;
-    timeWindows: string[];
-    dateLabel: string;
-    noteLabel: string;
-  };
+  showEmail: boolean;
+  showCall: boolean;
+  showSchedule: boolean;
   showSocialLinks: boolean;
   showCompliance: boolean;
   anchorId: string;
-  hideHeading?: boolean;
 }
 
 // Simple block types (existing)

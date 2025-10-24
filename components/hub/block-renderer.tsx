@@ -6,7 +6,7 @@ import { AboutBlockV2 } from './blocks/about-block-v2'
 import { PropertiesBlockV2 } from './blocks/properties-block-v2'
 import { NeighborhoodsBlock } from './blocks/neighborhoods-block'
 import { TestimonialsBlock } from './blocks/testimonials-block'
-import { ContactBlockV2 } from './blocks/contact-block-v2'
+import { ContactBlock } from './blocks/contact-block'
 import { ValuationBlock } from './blocks/valuation-block'
 import { LeadMagnetBlock } from './blocks/lead-magnet-block'
 import { SocialFooterBlock } from './blocks/social-footer-block'
@@ -101,7 +101,7 @@ export function BlockRenderer({
 
     case 'contact':
       return (
-        <ContactBlockV2
+        <ContactBlock
           settings={settings}
           teamId={teamId}
           isPreview={isPreview}

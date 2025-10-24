@@ -116,35 +116,11 @@ function getDefaultSettings(type: HubBlockType): HubBlockSettings | null {
       }
     case 'contact':
       return {
-        headline: 'Interested in working together?',
-        subline: 'Schedule a tour or ask a question.',
-        layout: 'buttons',
-        actions: {
-          showEmail: true,
-          showCall: true,
-          showSchedule: true,
-          showWhatsapp: false,
-        },
-        labels: {
-          email: 'Send Email',
-          call: 'Call',
-          schedule: 'Schedule a Visit',
-          whatsapp: 'WhatsApp',
-        },
-        form: {
-          show: true,
-          mode: 'modal',
-          requirePhone: false,
-          messagePlaceholder: 'I\'m interested in this…',
-          consentLabel: 'I agree to be contacted about real estate opportunities.',
-        },
-        schedule: {
-          enabled: true,
-          title: 'Request a time',
-          timeWindows: ['Morning', 'Afternoon', 'Evening'],
-          dateLabel: 'Preferred date',
-          noteLabel: 'Anything we should know?',
-        },
+        headline: "Let's Connect",
+        subline: 'Reach out to discuss your real estate needs.',
+        showEmail: true,
+        showCall: true,
+        showSchedule: true,
         showSocialLinks: true,
         showCompliance: true,
         anchorId: 'contact',
