@@ -10,7 +10,7 @@ import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2, Save } from 'lucide-react'
-import { NeighborhoodMediaManager } from './neighborhood-media-manager'
+import { NeighborhoodMediaManager } from './neighborhood-media-manager-simple'
 
 interface Neighborhood {
   id: string
