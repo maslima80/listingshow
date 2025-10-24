@@ -35,6 +35,7 @@ interface NeighborhoodMediaManagerProps {
 export function NeighborhoodMediaManager({ neighborhoodId }: NeighborhoodMediaManagerProps) {
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([])
   const [loading, setLoading] = useState(true)
+  const [uploading, setUploading] = useState(false)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -162,6 +163,105 @@ export function NeighborhoodMediaManager({ neighborhoodId }: NeighborhoodMediaMa
     }
   }
 
+  const handleSaveMedia = async () => {
+    const newFiles = mediaFiles.filter(m => !m.isExisting && m.file)
+    
+    if (newFiles.length === 0) {
+      toast({
+        title: 'No new files',
+        description: 'All media is already uploaded',
+      })
+      return
+    }
+
+    setUploading(true)
+
+    try {
+      // Upload each file
+      for (const mediaFile of newFiles) {
+        if (!mediaFile.file) continue
+
+        if (mediaFile.type === 'video') {
+          // Upload video to Bunny.net
+          const formData = new FormData()
+          formData.append('file', mediaFile.file)
+          formData.append('folder', `/neighborhoods/${neighborhoodId}`)
+
+          const response = await fetch('/api/upload/video', {
+            method: 'POST',
+            body: formData,
+          })
+
+          if (!response.ok) throw new Error('Failed to upload video')
+
+          const data = await response.json()
+
+          // Add to database
+          await fetch(`/api/neighborhoods/${neighborhoodId}/media`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'video',
+              url: data.streamUrl,
+              thumbnailUrl: data.thumbnailUrl,
+              caption: null,
+            }),
+          })
+        } else {
+          // Upload photo to ImageKit
+          const formData = new FormData()
+          formData.append('file', mediaFile.file)
+          formData.append('folder', `/neighborhoods/${neighborhoodId}`)
+
+          const response = await fetch('/api/upload/imagekit', {
+            method: 'POST',
+            body: formData,
+          })
+
+          if (!response.ok) throw new Error('Failed to upload photo')
+
+          const data = await response.json()
+
+          // Add to database
+          await fetch(`/api/neighborhoods/${neighborhoodId}/media`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'photo',
+              url: data.url,
+              caption: null,
+            }),
+          })
+
+          // If this is the cover, update neighborhood
+          if (mediaFile.isCover) {
+            await fetch(`/api/neighborhoods/${neighborhoodId}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ coverImageUrl: data.url }),
+            })
+          }
+        }
+      }
+
+      toast({
+        title: 'Success',
+        description: `Uploaded ${newFiles.length} ${newFiles.length === 1 ? 'file' : 'files'}`,
+      })
+
+      // Refresh media list
+      await fetchMedia()
+    } catch (error) {
+      console.error('Error uploading media:', error)
+      toast({
+        title: 'Upload failed',
+        description: 'Failed to upload some files',
+      })
+    } finally {
+      setUploading(false)
+    }
+  }
+
   const videos = mediaFiles.filter(m => m.type === 'video')
   const photos = mediaFiles.filter(m => m.type === 'photo')
 
@@ -173,26 +273,51 @@ export function NeighborhoodMediaManager({ neighborhoodId }: NeighborhoodMediaMa
     )
   }
 
+  const hasNewFiles = mediaFiles.some(m => !m.isExisting)
+
   return (
     <div className="space-y-6">
       {/* Upload Button */}
-      <div>
-        <input
-          type="file"
-          id="media-upload"
-          accept="image/*,video/*"
-          multiple
-          onChange={handleMediaUpload}
-          className="hidden"
-        />
-        <label htmlFor="media-upload">
-          <Button variant="outline" size="lg" className="w-full" asChild>
-            <span className="cursor-pointer">
-              <Upload className="w-5 h-5 mr-2" />
-              Add Photos & Videos
-            </span>
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <input
+            type="file"
+            id="media-upload"
+            accept="image/*,video/*"
+            multiple
+            onChange={handleMediaUpload}
+            className="hidden"
+            disabled={uploading}
+          />
+          <label htmlFor="media-upload">
+            <Button variant="outline" size="lg" className="w-full" asChild disabled={uploading}>
+              <span className="cursor-pointer">
+                <Upload className="w-5 h-5 mr-2" />
+                Add Photos & Videos
+              </span>
+            </Button>
+          </label>
+        </div>
+        {hasNewFiles && (
+          <Button 
+            size="lg" 
+            onClick={handleSaveMedia}
+            disabled={uploading}
+            className="min-w-[140px]"
+          >
+            {uploading ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              <>
+                <Upload className="w-5 h-5 mr-2" />
+                Save Media
+              </>
+            )}
           </Button>
-        </label>
+        )}
       </div>
 
       {/* Videos Section */}

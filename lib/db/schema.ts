@@ -231,8 +231,12 @@ export const neighborhoodMedia = pgTable('neighborhood_media', {
   neighborhoodId: uuid('neighborhood_id').notNull().references(() => neighborhoods.id, { onDelete: 'cascade' }),
   type: neighborhoodMediaTypeEnum('type').notNull(),
   url: text('url').notNull(),
+  thumbUrl: text('thumb_url'), // Thumbnail URL for videos
   caption: text('caption'),
   position: integer('position').default(0).notNull(),
+  provider: varchar('provider', { length: 20 }), // 'imagekit' or 'bunny'
+  providerId: text('provider_id'), // ImageKit fileId or Bunny videoId for cleanup
+  durationSec: integer('duration_sec'), // Video duration in seconds
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 

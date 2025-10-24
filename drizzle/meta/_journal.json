@@ -57,6 +57,13 @@
       "when": 1761225001033,
       "tag": "0007_last_fenris",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1761291122960,
+      "tag": "0008_easy_blizzard",
+      "breakpoints": true
     }
   ]
 }

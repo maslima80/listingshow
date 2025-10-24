@@ -4,13 +4,16 @@ import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { neighborhoods, neighborhoodMedia, teamMembers } from '@/lib/db/schema'
 import { eq, and } from 'drizzle-orm'
+import { deleteFromImageKit } from '@/lib/imagekit'
+import { deleteFromBunny } from '@/lib/bunny'
 
 // DELETE /api/neighborhoods/media/[mediaId] - Delete a media item
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { mediaId: string } }
+  { params }: { params: Promise<{ mediaId: string }> }
 ) {
   try {
+    const { mediaId } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -27,7 +30,7 @@ export async function DELETE(
 
     // Get media item
     const media = await db.query.neighborhoodMedia.findFirst({
-      where: eq(neighborhoodMedia.id, params.mediaId),
+      where: eq(neighborhoodMedia.id, mediaId),
     })
 
     if (!media) {
@@ -46,8 +49,22 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
-    // Delete media
-    await db.delete(neighborhoodMedia).where(eq(neighborhoodMedia.id, params.mediaId))
+    // Clean up from storage provider
+    if (media.provider && media.providerId) {
+      try {
+        if (media.provider === 'imagekit') {
+          await deleteFromImageKit(media.providerId)
+        } else if (media.provider === 'bunny') {
+          await deleteFromBunny(media.providerId)
+        }
+      } catch (error) {
+        console.error(`Failed to delete from ${media.provider}:`, error)
+        // Continue with database deletion even if storage cleanup fails
+      }
+    }
+
+    // Delete media from database
+    await db.delete(neighborhoodMedia).where(eq(neighborhoodMedia.id, mediaId))
 
     return NextResponse.json({ success: true })
   } catch (error) {
@@ -62,9 +79,10 @@ export async function DELETE(
 // PATCH /api/neighborhoods/media/[mediaId] - Update media (caption, position)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { mediaId: string } }
+  { params }: { params: Promise<{ mediaId: string }> }
 ) {
   try {
+    const { mediaId } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -81,7 +99,7 @@ export async function PATCH(
 
     // Get media item
     const media = await db.query.neighborhoodMedia.findFirst({
-      where: eq(neighborhoodMedia.id, params.mediaId),
+      where: eq(neighborhoodMedia.id, mediaId),
     })
 
     if (!media) {
@@ -110,7 +128,7 @@ export async function PATCH(
         ...(caption !== undefined && { caption }),
         ...(position !== undefined && { position }),
       })
-      .where(eq(neighborhoodMedia.id, params.mediaId))
+      .where(eq(neighborhoodMedia.id, mediaId))
       .returning()
 
     return NextResponse.json(updated)

@@ -4,13 +4,16 @@ import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { neighborhoods, neighborhoodMedia, teamMembers } from '@/lib/db/schema'
 import { eq, and } from 'drizzle-orm'
+import { deleteFromImageKit } from '@/lib/imagekit'
+import { deleteFromBunny } from '@/lib/bunny'
 
 // GET /api/neighborhoods/[id] - Get a single neighborhood with media
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -28,7 +31,7 @@ export async function GET(
     // Get neighborhood
     const neighborhood = await db.query.neighborhoods.findFirst({
       where: and(
-        eq(neighborhoods.id, params.id),
+        eq(neighborhoods.id, id),
         eq(neighborhoods.teamId, membership.teamId)
       ),
     })
@@ -41,7 +44,7 @@ export async function GET(
     const media = await db
       .select()
       .from(neighborhoodMedia)
-      .where(eq(neighborhoodMedia.neighborhoodId, params.id))
+      .where(eq(neighborhoodMedia.neighborhoodId, id))
       .orderBy(neighborhoodMedia.position)
 
     return NextResponse.json({
@@ -60,9 +63,10 @@ export async function GET(
 // PATCH /api/neighborhoods/[id] - Update a neighborhood
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -80,7 +84,7 @@ export async function PATCH(
     // Verify neighborhood belongs to team
     const neighborhood = await db.query.neighborhoods.findFirst({
       where: and(
-        eq(neighborhoods.id, params.id),
+        eq(neighborhoods.id, id),
         eq(neighborhoods.teamId, membership.teamId)
       ),
     })
@@ -111,7 +115,7 @@ export async function PATCH(
         ),
       })
 
-      if (existing && existing.id !== params.id) {
+      if (existing && existing.id !== id) {
         return NextResponse.json(
           { error: 'A neighborhood with this slug already exists' },
           { status: 409 }
@@ -134,7 +138,7 @@ export async function PATCH(
         ...(position !== undefined && { position }),
         updatedAt: new Date(),
       })
-      .where(eq(neighborhoods.id, params.id))
+      .where(eq(neighborhoods.id, id))
       .returning()
 
     return NextResponse.json(updated)
@@ -150,9 +154,10 @@ export async function PATCH(
 // DELETE /api/neighborhoods/[id] - Delete a neighborhood
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -170,7 +175,7 @@ export async function DELETE(
     // Verify neighborhood belongs to team
     const neighborhood = await db.query.neighborhoods.findFirst({
       where: and(
-        eq(neighborhoods.id, params.id),
+        eq(neighborhoods.id, id),
         eq(neighborhoods.teamId, membership.teamId)
       ),
     })
@@ -179,8 +184,30 @@ export async function DELETE(
       return NextResponse.json({ error: 'Neighborhood not found' }, { status: 404 })
     }
 
-    // Delete neighborhood (cascade will delete media)
-    await db.delete(neighborhoods).where(eq(neighborhoods.id, params.id))
+    // Get all media for cleanup
+    const media = await db
+      .select()
+      .from(neighborhoodMedia)
+      .where(eq(neighborhoodMedia.neighborhoodId, id))
+
+    // Clean up all media from storage providers
+    for (const item of media) {
+      if (item.provider && item.providerId) {
+        try {
+          if (item.provider === 'imagekit') {
+            await deleteFromImageKit(item.providerId)
+          } else if (item.provider === 'bunny') {
+            await deleteFromBunny(item.providerId)
+          }
+        } catch (error) {
+          console.error(`Failed to delete ${item.type} from ${item.provider}:`, error)
+          // Continue with other deletions
+        }
+      }
+    }
+
+    // Delete neighborhood (cascade will delete media from database)
+    await db.delete(neighborhoods).where(eq(neighborhoods.id, id))
 
     return NextResponse.json({ success: true })
   } catch (error) {

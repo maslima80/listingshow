@@ -18,6 +18,7 @@ interface ImageUploadProps {
   showPreview?: boolean
   currentImage?: string | null
   onRemove?: () => void
+  multiple?: boolean
 }
 
 export function ImageUpload({
@@ -28,6 +29,7 @@ export function ImageUpload({
   showPreview = true,
   currentImage = null,
   onRemove,
+  multiple = false,
 }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -36,38 +38,43 @@ export function ImageUpload({
   const { toast } = useToast()
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const files = e.target.files
+    if (!files || files.length === 0) return
 
-    // Check file type
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: 'Invalid file type',
-        description: 'Please select an image file',
-      })
-      return
-    }
+    // Process multiple files
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
 
-    // Check file size
-    const fileSizeMB = file.size / (1024 * 1024)
-    if (fileSizeMB > maxSizeMB) {
-      toast({
-        title: 'File too large',
-        description: `Maximum file size is ${maxSizeMB}MB. Your file is ${fileSizeMB.toFixed(1)}MB`,
-      })
-      return
-    }
-
-    // Show preview
-    if (showPreview) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setPreview(reader.result as string)
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: 'Invalid file type',
+          description: `${file.name} is not an image file`,
+        })
+        continue
       }
-      reader.readAsDataURL(file)
-    }
 
-    await uploadImage(file)
+      // Check file size
+      const fileSizeMB = file.size / (1024 * 1024)
+      if (fileSizeMB > maxSizeMB) {
+        toast({
+          title: 'File too large',
+          description: `${file.name} is ${fileSizeMB.toFixed(1)}MB. Maximum is ${maxSizeMB}MB`,
+        })
+        continue
+      }
+
+      // Show preview for single file mode
+      if (showPreview && !multiple) {
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          setPreview(reader.result as string)
+        }
+        reader.readAsDataURL(file)
+      }
+
+      await uploadImage(file)
+    }
   }
 
   const uploadImage = async (file: File) => {
@@ -77,7 +84,7 @@ export function ImageUpload({
     try {
       // Create FormData
       const formData = new FormData()
-      formData.append('image', file)
+      formData.append('file', file)
       formData.append('fileName', file.name)
       formData.append('folder', folder)
 
@@ -147,6 +154,7 @@ export function ImageUpload({
         ref={fileInputRef}
         type="file"
         accept="image/*"
+        multiple={multiple}
         onChange={handleFileSelect}
         className="hidden"
         disabled={disabled || uploading}

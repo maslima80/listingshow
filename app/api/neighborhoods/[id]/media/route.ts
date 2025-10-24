@@ -8,9 +8,10 @@ import { eq, and } from 'drizzle-orm'
 // POST /api/neighborhoods/[id]/media - Add media to a neighborhood
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -28,7 +29,7 @@ export async function POST(
     // Verify neighborhood belongs to team
     const neighborhood = await db.query.neighborhoods.findFirst({
       where: and(
-        eq(neighborhoods.id, params.id),
+        eq(neighborhoods.id, id),
         eq(neighborhoods.teamId, membership.teamId)
       ),
     })
@@ -38,7 +39,7 @@ export async function POST(
     }
 
     const body = await request.json()
-    const { type, url, caption } = body
+    const { type, url, caption, thumbUrl, provider, providerId, durationSec } = body
 
     // Validate required fields
     if (!type || !url) {
@@ -59,7 +60,7 @@ export async function POST(
     const existingMedia = await db
       .select()
       .from(neighborhoodMedia)
-      .where(eq(neighborhoodMedia.neighborhoodId, params.id))
+      .where(eq(neighborhoodMedia.neighborhoodId, id))
 
     const maxPosition = existingMedia.length > 0
       ? Math.max(...existingMedia.map(m => m.position))
@@ -69,10 +70,14 @@ export async function POST(
     const [newMedia] = await db
       .insert(neighborhoodMedia)
       .values({
-        neighborhoodId: params.id,
+        neighborhoodId: id,
         type: type as 'photo' | 'video',
         url,
+        thumbUrl: thumbUrl || null,
         caption: caption || null,
+        provider: provider || null,
+        providerId: providerId || null,
+        durationSec: durationSec || null,
         position: maxPosition + 1,
       })
       .returning()
@@ -90,9 +95,10 @@ export async function POST(
 // GET /api/neighborhoods/[id]/media - Get all media for a neighborhood
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -110,7 +116,7 @@ export async function GET(
     // Verify neighborhood belongs to team
     const neighborhood = await db.query.neighborhoods.findFirst({
       where: and(
-        eq(neighborhoods.id, params.id),
+        eq(neighborhoods.id, id),
         eq(neighborhoods.teamId, membership.teamId)
       ),
     })
@@ -119,11 +125,11 @@ export async function GET(
       return NextResponse.json({ error: 'Neighborhood not found' }, { status: 404 })
     }
 
-    // Get media
+    // Get all media for this neighborhood
     const media = await db
       .select()
       .from(neighborhoodMedia)
-      .where(eq(neighborhoodMedia.neighborhoodId, params.id))
+      .where(eq(neighborhoodMedia.neighborhoodId, id))
       .orderBy(neighborhoodMedia.position)
 
     return NextResponse.json(media)
