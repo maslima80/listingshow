@@ -209,6 +209,7 @@ export interface ContactBlockSettings {
   showSocialLinks: boolean;
   showCompliance: boolean;
   anchorId: string;
+  hideHeading?: boolean;
 }
 
 // Simple block types (existing)
