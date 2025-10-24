@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Plus, MapPin, Image, Video, Edit, Trash2, Eye, EyeOff } from 'lucide-react'
-import { NeighborhoodDialog } from './neighborhood-dialog'
+import { NeighborhoodDialog } from './neighborhood-dialog-new'
 import { useToast } from '@/hooks/use-toast'
 import {
   AlertDialog,
