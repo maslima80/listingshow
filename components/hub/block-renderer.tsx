@@ -3,12 +3,12 @@
 import { HubBlock, HubBlockType } from '@/lib/types/hub-blocks'
 import { HeroBlock } from './blocks/hero-block'
 import { AboutBlockV2 } from './blocks/about-block-v2'
+import { PropertiesBlockV2 } from './blocks/properties-block-v2'
 import { NeighborhoodsBlock } from './blocks/neighborhoods-block'
 import { TestimonialsBlock } from './blocks/testimonials-block'
 import { ContactBlock } from './blocks/contact-block'
 import { ValuationBlock } from './blocks/valuation-block'
 import { LeadMagnetBlock } from './blocks/lead-magnet-block'
-import { PropertiesBlock } from './blocks/properties-block'
 import { SocialFooterBlock } from './blocks/social-footer-block'
 
 interface BlockRendererProps {
@@ -47,13 +47,11 @@ export function BlockRenderer({
 
     case 'properties':
       return (
-        <div id="properties">
-          <PropertiesBlock
-            settings={settings}
-            teamSlug={teamSlug}
-            isPreview={isPreview}
-          />
-        </div>
+        <PropertiesBlockV2
+          settings={settings}
+          teamSlug={teamSlug}
+          isPreview={isPreview}
+        />
       )
 
     case 'neighborhoods':

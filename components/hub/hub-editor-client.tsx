@@ -58,12 +58,20 @@ function getDefaultSettings(type: HubBlockType): HubBlockSettings | null {
       }
     case 'properties':
       return {
-        displayType: 'grid',
-        propertyFilter: 'all',
-        limit: 6,
-        showStatusBadge: true,
-        autoRotate: false,
-        columns: 3,
+        propertyIds: [],
+        layout: 'auto',
+        max: 6,
+        show: {
+          price: true,
+          badges: true,
+          location: true,
+          bedsBaths: true,
+          cta: true,
+        },
+        ctaLabel: 'View Property',
+        title: 'Featured Properties',
+        subtitle: 'Explore my latest listings',
+        hideHeading: false,
       }
     case 'neighborhoods':
       return {

@@ -90,13 +90,20 @@ export interface AboutBlockSettings {
 
 // Properties Block Settings
 export interface PropertiesBlockSettings {
-  displayType: 'carousel' | 'grid' | 'list';
-  propertyFilter: 'all' | 'for_sale' | 'for_rent' | 'sold';
-  limit: number;
-  showStatusBadge: boolean;
-  autoRotate: boolean;
-  rotationSpeed?: number; // milliseconds
-  columns?: number; // for grid layout
+  propertyIds: string[]; // Selected property IDs
+  layout: 'auto' | 'grid' | 'carousel' | 'hero';
+  max: number; // Limit visible properties (1-6)
+  show: {
+    price: boolean;
+    badges: boolean; // For Sale / For Rent / Coming Soon
+    location: boolean;
+    bedsBaths: boolean;
+    cta: boolean;
+  };
+  ctaLabel: string;
+  title?: string; // Section title
+  subtitle?: string; // Section subtitle
+  hideHeading?: boolean;
 }
 
 // Neighborhoods Block Settings

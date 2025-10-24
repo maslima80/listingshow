@@ -8,7 +8,7 @@ import { Loader2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { HeroSettingsNew } from './settings/hero-settings-new'
 import { AboutSettingsV2 } from './settings/about-settings-v2'
-import { PropertiesSettings } from './settings/properties-settings'
+import { PropertiesSettingsV2 } from './settings/properties-settings-v2'
 import { NeighborhoodsSettings } from './settings/neighborhoods-settings'
 import { TestimonialsSettings } from './settings/testimonials-settings'
 
@@ -88,7 +88,7 @@ export function BlockSettingsPanel({ block, open, onOpenChange, onSave }: BlockS
       case 'about':
         return <AboutSettingsV2 settings={settings} onChange={setSettings} />
       case 'properties':
-        return <PropertiesSettings settings={settings} onChange={setSettings} />
+        return <PropertiesSettingsV2 settings={settings} onChange={setSettings} />
       case 'neighborhoods':
         return <NeighborhoodsSettings settings={settings} onChange={setSettings} />
       case 'testimonials':
