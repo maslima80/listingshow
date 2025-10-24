@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { PropertiesBlockSettings } from '@/lib/types/hub-blocks'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { motion } from 'framer-motion'
-import { Bed, Bath, MapPin, ExternalLink } from 'lucide-react'
+import { MapPin } from 'lucide-react'
 import Link from 'next/link'
+import { formatBeds, formatBaths, formatPriceLabel, getStatusBadge } from '@/lib/utils/property-formatters'
 
 interface PropertiesBlockV2Props {
   settings: PropertiesBlockSettings
@@ -19,21 +19,16 @@ interface Property {
   slug: string
   title: string
   location: string
-  coverImageUrl?: string
-  price?: number
+  coverImageUrl?: string | null
+  price?: number | string
   currency?: string
-  priceVisibility?: string
+  priceVisibility?: 'show' | 'upon_request' | 'contact'
+  rentPeriod?: string
   beds?: number
-  baths?: number
+  baths?: number | string
+  areaSqft?: number | string
   status: string
-  listingPurpose: string
-}
-
-const STATUS_LABELS = {
-  published: 'For Sale',
-  rented: 'For Rent',
-  sold: 'Sold',
-  draft: 'Coming Soon',
+  listingPurpose: 'sale' | 'rent' | 'coming_soon'
 }
 
 export function PropertiesBlockV2({ settings, teamSlug, isPreview = false }: PropertiesBlockV2Props) {
@@ -105,20 +100,6 @@ export function PropertiesBlockV2({ settings, teamSlug, isPreview = false }: Pro
     : 'carousel'
     : layout
 
-  // Format price
-  const formatPrice = (property: Property) => {
-    if (property.priceVisibility === 'hide' || !property.price) {
-      return 'Price on Request'
-    }
-    const formatted = new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: property.currency || 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(property.price)
-    return formatted
-  }
-
   // Get ImageKit URL
   const getImageUrl = (url?: string | null, width = 1200, height = 1200) => {
     if (!url) return 'https://placehold.co/1200x1200/e2e8f0/64748b?text=No+Image'
@@ -128,18 +109,36 @@ export function PropertiesBlockV2({ settings, teamSlug, isPreview = false }: Pro
     return url
   }
 
+  // Format property stats line (beds · baths)
+  const formatStats = (property: Property) => {
+    const parts: string[] = []
+    const bedsText = formatBeds(property.beds)
+    if (bedsText) parts.push(bedsText)
+    const bathsText = formatBaths(property.baths)
+    if (bathsText) parts.push(bathsText)
+    return parts.join(' · ')
+  }
+
   // Render property card
-  const renderPropertyCard = (property: Property, index: number) => (
-    <motion.div
-      key={property.id}
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
-      className="group"
-    >
-      <Link href={`/${teamSlug}/${property.slug}`} className="block">
-        <div className="relative aspect-square rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all hover:scale-[1.03]">
+  const renderPropertyCard = (property: Property, index: number) => {
+    const priceLabel = formatPriceLabel(property)
+    const statsText = formatStats(property)
+    const badgeLabel = getStatusBadge(property.listingPurpose)
+
+    return (
+      <motion.div
+        key={property.id}
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6, delay: index * 0.1 }}
+        className="group"
+      >
+        <Link 
+          href={`/${teamSlug}/${property.slug}`} 
+          className="block relative aspect-square rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all hover:scale-[1.03]"
+          aria-label={`View ${property.title}`}
+        >
           {/* Background Image */}
           <div 
             className="absolute inset-0 bg-cover bg-center"
@@ -149,13 +148,13 @@ export function PropertiesBlockV2({ settings, teamSlug, isPreview = false }: Pro
           />
 
           {/* Gradient Overlay (bottom 40%) */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
 
           {/* Badge (top-left) */}
           {show.badges && (
             <div className="absolute top-4 left-4">
-              <Badge className="bg-white/90 text-black hover:bg-white">
-                {STATUS_LABELS[property.status as keyof typeof STATUS_LABELS] || property.listingPurpose}
+              <Badge className="bg-white/90 text-black hover:bg-white font-medium">
+                {badgeLabel}
               </Badge>
             </div>
           )}
@@ -169,137 +168,113 @@ export function PropertiesBlockV2({ settings, teamSlug, isPreview = false }: Pro
 
             {/* Location */}
             {show.location && (
-              <div className="flex items-center gap-2 mb-3 text-white/90">
-                <MapPin className="w-4 h-4" />
-                <span className="text-sm">{property.location}</span>
+              <div className="flex items-center gap-2 mb-2 text-white/90">
+                <MapPin className="w-4 h-4 flex-shrink-0" />
+                <span className="text-sm line-clamp-1">{property.location}</span>
               </div>
             )}
 
-            {/* Beds/Baths */}
-            {show.bedsBaths && (property.beds || property.baths) && (
-              <div className="flex items-center gap-4 mb-3 text-sm text-white/90">
-                {property.beds && (
-                  <div className="flex items-center gap-1">
-                    <Bed className="w-4 h-4" />
-                    <span>{property.beds} Beds</span>
-                  </div>
-                )}
-                {property.baths && (
-                  <div className="flex items-center gap-1">
-                    <Bath className="w-4 h-4" />
-                    <span>{property.baths} Baths</span>
-                  </div>
-                )}
+            {/* Beds/Baths Stats */}
+            {show.bedsBaths && statsText && (
+              <div className="text-sm text-white/90 mb-3">
+                {statsText}
               </div>
             )}
 
-            {/* Price & CTA */}
-            <div className="flex items-center justify-between">
-              {show.price && (
-                <div className="text-2xl font-bold">
-                  {formatPrice(property)}
-                </div>
-              )}
-              {show.cta && (
-                <Button
-                  size="sm"
-                  className="text-xs px-4 py-2 uppercase tracking-wider font-medium"
-                  style={{ backgroundColor: 'var(--accent-color, #C9A66B)' }}
-                >
+            {/* Price */}
+            {show.price && (
+              <div className="text-2xl md:text-3xl font-bold">
+                {priceLabel}
+              </div>
+            )}
+
+            {/* VIEW PROPERTY chip - visible on hover */}
+            {show.cta && (
+              <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="inline-block text-xs px-4 py-2 rounded-full uppercase tracking-wider font-medium bg-white/20 backdrop-blur-sm border border-white/30">
                   {ctaLabel}
-                  <ExternalLink className="w-3 h-3 ml-2" />
-                </Button>
-              )}
-            </div>
+                </span>
+              </div>
+            )}
           </div>
-        </div>
-      </Link>
-    </motion.div>
-  )
+        </Link>
+      </motion.div>
+    )
+  }
 
   // Render hero layout (single property)
   const renderHero = () => {
     const property = properties[0]
     if (!property) return null
 
+    const priceLabel = formatPriceLabel(property)
+    const statsText = formatStats(property)
+    const badgeLabel = getStatusBadge(property.listingPurpose)
+
     return (
-      <Link href={`/${teamSlug}/${property.slug}`} className="block">
-        <div className="relative w-full aspect-video md:aspect-[16/9] rounded-2xl overflow-hidden shadow-2xl group">
-          {/* Background Image with Ken Burns */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center animate-ken-burns"
-            style={{ 
-              backgroundImage: `url(${getImageUrl(property.coverImageUrl, 1920, 1080)})`,
-            }}
-          />
+      <Link 
+        href={`/${teamSlug}/${property.slug}`} 
+        className="block relative w-full aspect-video md:aspect-[16/9] rounded-2xl overflow-hidden shadow-2xl group"
+        aria-label={`View ${property.title}`}
+      >
+        {/* Background Image with Ken Burns */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center animate-ken-burns"
+          style={{ 
+            backgroundImage: `url(${getImageUrl(property.coverImageUrl, 1920, 1080)})`,
+          }}
+        />
 
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 
-          {/* Badge */}
-          {show.badges && (
-            <div className="absolute top-6 left-6">
-              <Badge className="bg-white/90 text-black hover:bg-white text-sm px-4 py-2">
-                {STATUS_LABELS[property.status as keyof typeof STATUS_LABELS] || property.listingPurpose}
-              </Badge>
-            </div>
-          )}
-
-          {/* Content */}
-          <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12 text-white">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-            >
-              <h2 className="text-3xl md:text-5xl font-bold mb-4 leading-tight">
-                {property.title}
-              </h2>
-
-              {show.location && (
-                <div className="flex items-center gap-2 mb-4 text-lg text-white/90">
-                  <MapPin className="w-5 h-5" />
-                  <span>{property.location}</span>
-                </div>
-              )}
-
-              {show.bedsBaths && (property.beds || property.baths) && (
-                <div className="flex items-center gap-6 mb-6 text-white/90">
-                  {property.beds && (
-                    <div className="flex items-center gap-2">
-                      <Bed className="w-5 h-5" />
-                      <span className="text-lg">{property.beds} Bedrooms</span>
-                    </div>
-                  )}
-                  {property.baths && (
-                    <div className="flex items-center gap-2">
-                      <Bath className="w-5 h-5" />
-                      <span className="text-lg">{property.baths} Bathrooms</span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="flex items-center gap-6">
-                {show.price && (
-                  <div className="text-4xl md:text-5xl font-bold">
-                    {formatPrice(property)}
-                  </div>
-                )}
-                {show.cta && (
-                  <Button
-                    size="lg"
-                    className="text-sm px-10 py-6 uppercase tracking-wider font-medium"
-                    style={{ backgroundColor: 'var(--accent-color, #C9A66B)' }}
-                  >
-                    {ctaLabel}
-                    <ExternalLink className="w-4 h-4 ml-2" />
-                  </Button>
-                )}
-              </div>
-            </motion.div>
+        {/* Badge */}
+        {show.badges && (
+          <div className="absolute top-6 left-6">
+            <Badge className="bg-white/90 text-black hover:bg-white text-sm px-4 py-2 font-medium">
+              {badgeLabel}
+            </Badge>
           </div>
+        )}
+
+        {/* Content */}
+        <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12 text-white">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-3xl md:text-5xl font-bold mb-4 leading-tight">
+              {property.title}
+            </h2>
+
+            {show.location && (
+              <div className="flex items-center gap-2 mb-4 text-lg text-white/90">
+                <MapPin className="w-5 h-5 flex-shrink-0" />
+                <span>{property.location}</span>
+              </div>
+            )}
+
+            {show.bedsBaths && statsText && (
+              <div className="text-lg text-white/90 mb-6">
+                {statsText}
+              </div>
+            )}
+
+            <div className="flex items-center gap-6 flex-wrap">
+              {show.price && (
+                <div className="text-4xl md:text-5xl font-bold">
+                  {priceLabel}
+                </div>
+              )}
+              {show.cta && (
+                <span className="inline-block text-sm px-10 py-4 rounded uppercase tracking-wider font-medium bg-white/20 backdrop-blur-sm border border-white/30 group-hover:bg-white/30 transition-colors">
+                  {ctaLabel}
+                </span>
+              )}
+            </div>
+          </motion.div>
         </div>
       </Link>
     )

@@ -61,8 +61,10 @@ export async function GET(request: NextRequest) {
         price: properties.price,
         currency: properties.currency,
         priceVisibility: properties.priceVisibility,
+        rentPeriod: properties.rentPeriod,
         beds: properties.beds,
         baths: properties.baths,
+        areaSqft: properties.areaSqft,
       })
       .from(properties)
       .leftJoin(mediaAssets, eq(properties.coverAssetId, mediaAssets.id))
