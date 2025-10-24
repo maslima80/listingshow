@@ -306,8 +306,8 @@ export const BLOCK_METADATA: Record<HubBlockType, BlockMetadata> = {
   },
   properties: {
     type: 'properties',
-    label: 'Featured Properties',
-    description: 'Showcase your active listings',
+    label: 'Properties',
+    description: 'Showcase your listings with adaptive layouts',
     icon: 'Home',
     category: 'essential',
   },

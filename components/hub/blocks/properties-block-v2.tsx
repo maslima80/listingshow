@@ -120,8 +120,8 @@ export function PropertiesBlockV2({ settings, teamSlug, isPreview = false }: Pro
   }
 
   // Get ImageKit URL
-  const getImageUrl = (url?: string, width = 1200, height = 1200) => {
-    if (!url) return '/placeholder.svg'
+  const getImageUrl = (url?: string | null, width = 1200, height = 1200) => {
+    if (!url) return 'https://placehold.co/1200x1200/e2e8f0/64748b?text=No+Image'
     if (url.includes('imagekit.io')) {
       return `${url}?tr=w-${width},h-${height},fo-auto`
     }
