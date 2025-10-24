@@ -9,6 +9,7 @@ import { Plus, Loader2 } from 'lucide-react'
 import { SortableBlockItem } from './sortable-block-item'
 import { AddBlockDialog } from './add-block-dialog'
 import { HubPreview } from './hub-preview'
+import { BlockSettingsPanel } from './block-settings-panel'
 import { useToast } from '@/hooks/use-toast'
 import { HubBlock, HubBlockType, HubBlockSettings } from '@/lib/types/hub-blocks'
 
@@ -423,6 +424,17 @@ export function HubEditorClient({ teamSlug, accentColor, themeMode, backgroundCo
         open={addDialogOpen}
         onOpenChange={setAddDialogOpen}
         onAdd={handleAddBlock}
+      />
+
+      {/* Block Settings Panel */}
+      <BlockSettingsPanel
+        block={editingBlock}
+        open={!!editingBlock}
+        onOpenChange={(open) => !open && setEditingBlock(null)}
+        onSave={async (blockId, settings) => {
+          await handleUpdateBlock(blockId, { settingsJson: settings })
+          fetchBlocks() // Refresh to see changes
+        }}
       />
     </div>
   )
