@@ -40,9 +40,21 @@ function getDefaultSettings(type: HubBlockType): HubBlockSettings | null {
       }
     case 'about':
       return {
-        layout: 'left',
-        showStats: false,
-        showCredentials: false,
+        useProfile: true,
+        override: {},
+        show: {
+          photo: true,
+          shortBio: true,
+          extendedBio: false,
+          videoIntro: false,
+          stats: true,
+          credentials: true,
+          socialLinks: true,
+        },
+        layout: 'photoLeft',
+        cta: {
+          enabled: false,
+        },
       }
     case 'properties':
       return {

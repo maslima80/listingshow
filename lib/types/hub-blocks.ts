@@ -56,21 +56,36 @@ export interface HeroBlockSettings {
 
 // About Block Settings
 export interface AboutBlockSettings {
-  photoUrl?: string;
-  bioShort?: string;
-  bioLong?: string;
-  videoUrl?: string;
-  showStats: boolean;
-  stats?: {
-    years?: number;
-    homesSold?: number;
-    volume?: string;
+  useProfile: boolean; // If true, pull from Profile Manager
+  override?: {
+    photoUrl?: string;
+    fullName?: string;
+    title?: string;
+    shortBio?: string;
+    extendedBio?: string;
+    videoAssetId?: string; // Bunny (phase 2)
+    stats?: {
+      years?: number;
+      homesSold?: number;
+      volume?: string; // e.g., "$100M+"
+    };
+    credentials?: string[];
   };
-  showCredentials: boolean;
-  credentials?: string[];
-  ctaText?: string;
-  ctaLink?: string;
-  layout: 'left' | 'right' | 'center';
+  show: {
+    photo: boolean;
+    shortBio: boolean;
+    extendedBio: boolean;
+    videoIntro: boolean; // phase 2
+    stats: boolean;
+    credentials: boolean;
+    socialLinks: boolean;
+  };
+  layout: 'photoLeft' | 'photoTop' | 'card';
+  cta?: {
+    enabled: boolean;
+    label?: string;
+    action?: CtaAction;
+  };
 }
 
 // Properties Block Settings
