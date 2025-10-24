@@ -135,7 +135,7 @@ export function PropertiesBlockV2({ settings, teamSlug, isPreview = false }: Pro
         className="group"
       >
         <Link 
-          href={`/${teamSlug}/${property.slug}`} 
+          href={`/p/${property.slug}`} 
           className="block relative aspect-square rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all hover:scale-[1.03]"
           aria-label={`View ${property.title}`}
         >
@@ -213,7 +213,7 @@ export function PropertiesBlockV2({ settings, teamSlug, isPreview = false }: Pro
 
     return (
       <Link 
-        href={`/${teamSlug}/${property.slug}`} 
+        href={`/p/${property.slug}`} 
         className="block relative w-full aspect-video md:aspect-[16/9] rounded-2xl overflow-hidden shadow-2xl group"
         aria-label={`View ${property.title}`}
       >
