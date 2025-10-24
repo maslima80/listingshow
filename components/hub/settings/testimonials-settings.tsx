@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface TestimonialsSettingsProps {
@@ -47,6 +48,42 @@ export function TestimonialsSettings({ settings, onChange }: TestimonialsSetting
 
   return (
     <div className="space-y-6">
+      {/* Section Title */}
+      <div className="border-b pb-6">
+        <Label className="text-base mb-4 block">Section Title</Label>
+        
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="title">Title</Label>
+            <Input
+              id="title"
+              placeholder="What Clients Say"
+              value={settings.title || ''}
+              onChange={(e) => updateSetting('title', e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="subtitle">Subtitle</Label>
+            <Input
+              id="subtitle"
+              placeholder="Real experiences from real people"
+              value={settings.subtitle || ''}
+              onChange={(e) => updateSetting('subtitle', e.target.value)}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <Label htmlFor="hide-heading" className="font-normal">Hide Heading</Label>
+            <Switch
+              id="hide-heading"
+              checked={settings.hideHeading || false}
+              onCheckedChange={(checked) => updateSetting('hideHeading', checked)}
+            />
+          </div>
+        </div>
+      </div>
+
       <div>
         <Label>Select Testimonials to Display</Label>
         <p className="text-xs text-muted-foreground mt-1 mb-4">

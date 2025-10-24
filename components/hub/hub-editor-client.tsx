@@ -80,6 +80,9 @@ function getDefaultSettings(type: HubBlockType): HubBlockSettings | null {
         showStats: false,
         ctaText: 'Explore Area',
         columns: 3,
+        title: 'Neighborhoods I Serve',
+        subtitle: 'Discover the areas where I specialize',
+        hideHeading: false,
       }
     case 'testimonials':
       return {
@@ -91,6 +94,9 @@ function getDefaultSettings(type: HubBlockType): HubBlockSettings | null {
         autoRotate: true,
         rotationSpeed: 5000,
         limit: 10,
+        title: 'What Clients Say',
+        subtitle: 'Real experiences from real people',
+        hideHeading: false,
       }
     case 'valuation':
       return {

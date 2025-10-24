@@ -36,6 +36,9 @@ export function TestimonialsBlock({
     autoRotate = true,
     rotationSpeed = 5000,
     limit = 10,
+    title = 'What Clients Say',
+    subtitle = 'Real experiences from real people',
+    hideHeading = false,
   } = settings
 
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
@@ -112,17 +115,21 @@ export function TestimonialsBlock({
       <section className="py-20 px-6 bg-muted/30">
         <div className="max-w-4xl mx-auto">
           {/* Section Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-4xl font-bold mb-4">What Clients Say</h2>
-            <p className="text-xl text-muted-foreground">
-              Real experiences from real people
-            </p>
-          </motion.div>
+          {!hideHeading && (title || subtitle) && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              {title && <h2 className="text-4xl font-bold mb-4">{title}</h2>}
+              {subtitle && (
+                <p className="text-xl text-muted-foreground">
+                  {subtitle}
+                </p>
+              )}
+            </motion.div>
+          )}
 
           {/* Carousel */}
           <div className="relative">

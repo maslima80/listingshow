@@ -108,11 +108,14 @@ export interface PropertiesBlockSettings {
 
 // Neighborhoods Block Settings
 export interface NeighborhoodsBlockSettings {
-  displayType: 'cards' | 'list' | 'grid';
+  displayType: 'cards' | 'list' | 'grid' | 'carousel';
   neighborhoodIds: string[]; // Selected neighborhood IDs
   showStats: boolean;
   ctaText: string;
   columns?: number;
+  title?: string;
+  subtitle?: string;
+  hideHeading?: boolean;
 }
 
 // Testimonials Block Settings
@@ -125,6 +128,9 @@ export interface TestimonialsBlockSettings {
   autoRotate: boolean;
   rotationSpeed?: number;
   limit?: number;
+  title?: string;
+  subtitle?: string;
+  hideHeading?: boolean;
 }
 
 // Blog Block Settings

@@ -33,6 +33,9 @@ export function NeighborhoodsBlock({
     showStats,
     ctaText = 'Explore Area',
     columns = 3,
+    title = 'Neighborhoods I Serve',
+    subtitle = 'Discover the areas where I specialize',
+    hideHeading = false,
   } = settings
 
   const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([])
@@ -95,17 +98,21 @@ export function NeighborhoodsBlock({
     <section className="py-20 px-6 bg-muted/30">
       <div className="max-w-6xl mx-auto">
         {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-4xl font-bold mb-4">Areas I Serve</h2>
-          <p className="text-xl text-muted-foreground">
-            Explore the neighborhoods where I specialize
-          </p>
-        </motion.div>
+        {!hideHeading && (title || subtitle) && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            {title && <h2 className="text-4xl font-bold mb-4">{title}</h2>}
+            {subtitle && (
+              <p className="text-xl text-muted-foreground">
+                {subtitle}
+              </p>
+            )}
+          </motion.div>
+        )}
 
         {/* Neighborhoods Grid */}
         <div className={`grid grid-cols-1 ${gridClass} gap-6`}>
