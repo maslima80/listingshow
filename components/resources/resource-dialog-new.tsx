@@ -369,12 +369,12 @@ export function ResourceDialog({ open, onOpenChange, resource, onSave }: Resourc
               {fileUrl ? (
                 <div className="space-y-3">
                   <div className="flex items-center justify-center gap-3 p-4 bg-white rounded-lg">
-                    <FileText className="w-8 h-8 text-primary" />
-                    <div className="flex-1 text-left">
+                    <FileText className="w-8 h-8 text-primary flex-shrink-0" />
+                    <div className="flex-1 text-left min-w-0">
                       <p className="font-medium truncate">{fileName}</p>
                       <p className="text-sm text-muted-foreground">{formatFileSize(fileSize)}</p>
                     </div>
-                    <Check className="w-6 h-6 text-green-600" />
+                    <Check className="w-6 h-6 text-green-600 flex-shrink-0" />
                   </div>
                   <div className="flex gap-2">
                     <Button

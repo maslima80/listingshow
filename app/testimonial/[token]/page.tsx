@@ -11,7 +11,7 @@ interface PageProps {
 }
 
 export default async function PublicTestimonialPage({ params }: PageProps) {
-  const { token } = params
+  const { token } = await params
 
   // Verify token exists and is not expired
   const request = await db
