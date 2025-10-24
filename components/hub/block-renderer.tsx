@@ -40,64 +40,76 @@ export function BlockRenderer({
   // Render based on block type
   switch (block.type) {
     case 'hero':
-      return <HeroBlock settings={settings} isPreview={isPreview} />
+      return <HeroBlock settings={settings} teamId={teamId} isPreview={isPreview} />
 
     case 'about':
-      return <AboutBlock settings={settings} isPreview={isPreview} />
+      return <div id="about"><AboutBlock settings={settings} isPreview={isPreview} /></div>
 
     case 'properties':
       return (
-        <PropertiesBlock
-          settings={settings}
-          teamSlug={teamSlug}
-          isPreview={isPreview}
-        />
+        <div id="properties">
+          <PropertiesBlock
+            settings={settings}
+            teamSlug={teamSlug}
+            isPreview={isPreview}
+          />
+        </div>
       )
 
     case 'neighborhoods':
       return (
-        <NeighborhoodsBlock
-          settings={settings}
-          teamSlug={teamSlug}
-          teamId={teamId}
-          isPreview={isPreview}
-        />
+        <div id="neighborhoods">
+          <NeighborhoodsBlock
+            settings={settings}
+            teamSlug={teamSlug}
+            teamId={teamId}
+            isPreview={isPreview}
+          />
+        </div>
       )
 
     case 'testimonials':
       return (
-        <TestimonialsBlock
-          settings={settings}
-          teamId={teamId}
-          isPreview={isPreview}
-        />
+        <div id="testimonials">
+          <TestimonialsBlock
+            settings={settings}
+            teamId={teamId}
+            isPreview={isPreview}
+          />
+        </div>
       )
 
     case 'valuation':
       return (
-        <ValuationBlock
-          settings={settings}
-          teamId={teamId}
-          isPreview={isPreview}
-        />
+        <div id="valuation">
+          <ValuationBlock
+            settings={settings}
+            teamId={teamId}
+            isPreview={isPreview}
+          />
+        </div>
       )
 
     case 'lead_magnet':
       return (
-        <LeadMagnetBlock
-          settings={settings}
-          teamId={teamId}
-          isPreview={isPreview}
-        />
+        <div id="lead-magnet">
+          <LeadMagnetBlock
+            settings={settings}
+            teamId={teamId}
+            isPreview={isPreview}
+          />
+        </div>
       )
 
     case 'contact':
       return (
-        <ContactBlock
-          settings={settings}
-          teamId={teamId}
-          isPreview={isPreview}
-        />
+        <div id="contact">
+          <ContactBlock
+            settings={settings}
+            teamId={teamId}
+            isPreview={isPreview}
+          />
+        </div>
       )
 
     case 'social_footer':

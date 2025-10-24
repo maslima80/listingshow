@@ -9,10 +9,11 @@ import { z } from 'zod'
 const updateSchema = z.object({
   title: z.string().optional(),
   subtitle: z.string().optional(),
-  url: z.string().url().optional(),
-  mediaUrl: z.string().url().optional(),
+  url: z.string().url().optional().nullable(),
+  mediaUrl: z.string().url().optional().nullable(),
   position: z.number().int().optional(),
   isVisible: z.boolean().optional(),
+  settingsJson: z.any().optional(), // Allow any JSON for block settings
 })
 
 // PATCH /api/hub/blocks/[id] - Update a block

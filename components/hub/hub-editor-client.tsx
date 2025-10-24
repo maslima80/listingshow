@@ -18,13 +18,25 @@ function getDefaultSettings(type: HubBlockType): HubBlockSettings | null {
   switch (type) {
     case 'hero':
       return {
-        backgroundType: 'gradient',
-        gradientFrom: '#1e3a8a',
-        gradientTo: '#7c3aed',
         headline: 'Welcome to My Hub',
         tagline: 'Your trusted real estate partner',
-        textPosition: 'center',
-        overlayOpacity: 0.4,
+        backgroundImage: {
+          url: '',
+          alt: 'Hero background',
+        },
+        overlay: 'balanced',
+        textAlign: 'center',
+        primaryCta: {
+          label: 'View My Listings',
+          action: {
+            type: 'anchor',
+            value: '#properties',
+          },
+        },
+        secondaryCta: {
+          enabled: false,
+        },
+        showAgencyLogo: false,
       }
     case 'about':
       return {
@@ -431,8 +443,8 @@ export function HubEditorClient({ teamSlug, accentColor, themeMode, backgroundCo
         block={editingBlock}
         open={!!editingBlock}
         onOpenChange={(open) => !open && setEditingBlock(null)}
-        onSave={async (blockId, settings) => {
-          await handleUpdateBlock(blockId, { settingsJson: settings })
+        onSave={async (blockId, settingsData) => {
+          await handleUpdateBlock(blockId, settingsData)
           fetchBlocks() // Refresh to see changes
         }}
       />

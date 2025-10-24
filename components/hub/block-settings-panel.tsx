@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { HubBlock } from '@/lib/types/hub-blocks'
 import { Loader2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { HeroSettings } from './settings/hero-settings'
+import { HeroSettingsNew } from './settings/hero-settings-new'
 import { AboutSettings } from './settings/about-settings'
 import { PropertiesSettings } from './settings/properties-settings'
 import { NeighborhoodsSettings } from './settings/neighborhoods-settings'
@@ -35,13 +35,14 @@ export function BlockSettingsPanel({ block, open, onOpenChange, onSave }: BlockS
     
     setLoading(true)
     try {
-      await onSave(block.id, settings)
+      await onSave(block.id, { settingsJson: settings })
       toast({
         title: 'Settings saved',
         description: 'Block updated successfully',
       })
       onOpenChange(false)
     } catch (error) {
+      console.error('Failed to save block settings:', error)
       toast({
         title: 'Error',
         description: 'Failed to save settings',
@@ -83,7 +84,7 @@ export function BlockSettingsPanel({ block, open, onOpenChange, onSave }: BlockS
   function renderSettings() {
     switch (block?.type) {
       case 'hero':
-        return <HeroSettings settings={settings} onChange={setSettings} />
+        return <HeroSettingsNew settings={settings} onChange={setSettings} />
       case 'about':
         return <AboutSettings settings={settings} onChange={setSettings} />
       case 'properties':

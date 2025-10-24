@@ -23,21 +23,35 @@ export type HubBlockType =
   | 'text'
   | 'spacer';
 
-// Hero Block Settings
+// Hero Block Settings (MVP: Image only, CRM-aware CTAs)
+export type CtaActionType = 'anchor' | 'contact' | 'schedule' | 'valuation' | 'mortgage' | 'url';
+
+export interface CtaAction {
+  type: CtaActionType;
+  value?: string; // hash id for anchor, URL for url type
+}
+
+export interface CtaConfig {
+  label: string;
+  action: CtaAction;
+}
+
 export interface HeroBlockSettings {
-  backgroundType: 'image' | 'video' | 'gradient';
-  backgroundUrl?: string;
-  gradientFrom?: string;
-  gradientTo?: string;
-  headline: string;
+  headline: string; // required
   tagline?: string;
-  showLogo?: boolean;
-  logoUrl?: string;
-  ctaText?: string;
-  ctaLink?: string;
-  textPosition: 'center' | 'left' | 'right';
-  overlayOpacity: number; // 0-1
-  textColor?: string;
+  backgroundImage: {
+    url: string; // ImageKit URL
+    alt: string;
+  };
+  overlay: 'light' | 'balanced' | 'dark';
+  textAlign: 'left' | 'center' | 'right'; // mobile always center
+  primaryCta: CtaConfig; // required
+  secondaryCta: {
+    enabled: boolean;
+    label?: string;
+    action?: CtaAction;
+  };
+  showAgencyLogo: boolean;
 }
 
 // About Block Settings
