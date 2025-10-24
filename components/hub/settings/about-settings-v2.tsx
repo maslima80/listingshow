@@ -172,13 +172,12 @@ export function AboutSettingsV2({ settings, onChange }: AboutSettingsV2Props) {
           <div className="flex items-center justify-between">
             <div>
               <Label htmlFor="show-video" className="font-normal">Video Introduction</Label>
-              <p className="text-xs text-muted-foreground">Coming soon</p>
+              <p className="text-xs text-muted-foreground">Shows play button over photo</p>
             </div>
             <Switch
               id="show-video"
               checked={safeSettings.show.videoIntro}
               onCheckedChange={(checked) => updateShow('videoIntro', checked)}
-              disabled
             />
           </div>
 

@@ -20,9 +20,13 @@ interface ProfileData {
   photoUrl?: string
   bio?: string
   bioLong?: string
+  videoUrl?: string
+  videoThumbnail?: string
   statsJson?: {
     years?: number
+    years_in_business?: number
     homesSold?: number
+    homes_sold?: string | number
     volume?: string
   }
   credentials?: string[]
@@ -49,6 +53,7 @@ export function AboutBlockV2({ settings, teamId, isPreview = false }: AboutBlock
   const [profileData, setProfileData] = useState<ProfileData | null>(null)
   const [loading, setLoading] = useState(true)
   const [bioExpanded, setBioExpanded] = useState(false)
+  const [videoPlaying, setVideoPlaying] = useState(false)
   const [contactOpen, setContactOpen] = useState(false)
   const [scheduleOpen, setScheduleOpen] = useState(false)
   const [valuationOpen, setValuationOpen] = useState(false)
@@ -81,6 +86,7 @@ export function AboutBlockV2({ settings, teamId, isPreview = false }: AboutBlock
     photoUrl: override?.photoUrl || '',
     bio: override?.shortBio || '',
     bioLong: override?.extendedBio || '',
+    videoUrl: override?.videoAssetId || '',
     statsJson: override?.stats,
     credentials: override?.credentials,
     socialLinks: {},
@@ -156,6 +162,13 @@ export function AboutBlockV2({ settings, teamId, isPreview = false }: AboutBlock
     }
   }
 
+  // Normalize stats (handle different field name variations)
+  const normalizedStats = data?.statsJson ? {
+    years: data.statsJson.years || (data.statsJson as any).years_in_business || (data.statsJson as any).yearsExperience,
+    homesSold: data.statsJson.homesSold || (data.statsJson as any).homes_sold,
+    volume: data.statsJson.volume || (data.statsJson as any).salesVolume,
+  } : null
+
   // Truncate bio for "Read more" functionality
   const bioText = show.extendedBio ? data?.bioLong : data?.bio
   const shouldTruncate = bioText && bioText.length > 400
@@ -223,41 +236,41 @@ export function AboutBlockV2({ settings, teamId, isPreview = false }: AboutBlock
       )}
 
       {/* Stats */}
-      {show.stats && data?.statsJson && (
+      {show.stats && normalizedStats && (
         <div className={`grid grid-cols-3 gap-4 md:gap-6 mb-8 py-6 border-y border-slate-200 dark:border-slate-800 ${centered ? 'max-w-2xl mx-auto w-full' : ''}`}>
-          {data.statsJson.years && (
+          {normalizedStats.years && (
             <div className={centered ? 'text-center' : 'text-center md:text-left'}>
               <div className={`flex items-center ${centered ? 'justify-center' : 'justify-center md:justify-start'} mb-1`}>
                 <TrendingUp className="w-5 h-5 text-primary mr-2" />
               </div>
               <div className="text-2xl md:text-3xl font-bold">
-                {data.statsJson.years}+
+                {normalizedStats.years}+
               </div>
               <div className="text-xs md:text-sm text-muted-foreground uppercase tracking-wide">
                 Years
               </div>
             </div>
           )}
-          {data.statsJson.homesSold && (
+          {normalizedStats.homesSold && (
             <div className={centered ? 'text-center' : 'text-center md:text-left'}>
               <div className={`flex items-center ${centered ? 'justify-center' : 'justify-center md:justify-start'} mb-1`}>
                 <Home className="w-5 h-5 text-primary mr-2" />
               </div>
               <div className="text-2xl md:text-3xl font-bold">
-                {data.statsJson.homesSold}+
+                {normalizedStats.homesSold}
               </div>
               <div className="text-xs md:text-sm text-muted-foreground uppercase tracking-wide">
                 Homes Sold
               </div>
             </div>
           )}
-          {data.statsJson.volume && (
+          {normalizedStats.volume && (
             <div className={centered ? 'text-center' : 'text-center md:text-left'}>
               <div className={`flex items-center ${centered ? 'justify-center' : 'justify-center md:justify-start'} mb-1`}>
                 <DollarSign className="w-5 h-5 text-primary mr-2" />
               </div>
               <div className="text-2xl md:text-3xl font-bold">
-                {data.statsJson.volume}
+                {normalizedStats.volume}
               </div>
               <div className="text-xs md:text-sm text-muted-foreground uppercase tracking-wide">
                 Volume
@@ -313,7 +326,7 @@ export function AboutBlockV2({ settings, teamId, isPreview = false }: AboutBlock
         {/* Photo Top Layout - Full width photo, centered content */}
         {layout === 'photoTop' && (
           <div className="max-w-6xl mx-auto flex flex-col items-center text-center">
-            {/* Photo */}
+            {/* Photo/Video */}
             {show.photo && data?.photoUrl && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -322,13 +335,42 @@ export function AboutBlockV2({ settings, teamId, isPreview = false }: AboutBlock
                 transition={{ duration: 0.6 }}
                 className="w-full max-w-md mb-8"
               >
-                <div className="relative aspect-[4/5] rounded-lg overflow-hidden shadow-lg">
-                  <img
-                    src={data.photoUrl}
-                    alt={data.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+                {show.videoIntro && data?.videoUrl && !videoPlaying ? (
+                  <div className="relative aspect-[4/5] rounded-lg overflow-hidden shadow-lg group cursor-pointer">
+                    <img
+                      src={data.photoUrl}
+                      alt={data.name}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/50 transition-colors">
+                      <button
+                        onClick={() => setVideoPlaying(true)}
+                        className="w-20 h-20 rounded-full bg-white/90 flex items-center justify-center hover:bg-white hover:scale-110 transition-all"
+                      >
+                        <svg className="w-8 h-8 text-black ml-1" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                ) : show.videoIntro && data?.videoUrl && videoPlaying ? (
+                  <div className="relative aspect-[4/5] rounded-lg overflow-hidden shadow-lg">
+                    <video
+                      src={data.videoUrl}
+                      controls
+                      autoPlay
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="relative aspect-[4/5] rounded-lg overflow-hidden shadow-lg">
+                    <img
+                      src={data.photoUrl}
+                      alt={data.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
               </motion.div>
             )}
 
@@ -428,41 +470,41 @@ export function AboutBlockV2({ settings, teamId, isPreview = false }: AboutBlock
                 )}
 
                 {/* Stats */}
-                {show.stats && data?.statsJson && (
+                {show.stats && normalizedStats && (
                   <div className="grid grid-cols-3 gap-4 mb-6 py-6 border-y border-slate-200 dark:border-slate-800">
-                    {data.statsJson.years && (
+                    {normalizedStats.years && (
                       <div className="text-center">
                         <div className="flex items-center justify-center mb-1">
                           <TrendingUp className="w-5 h-5 text-primary mr-2" />
                         </div>
                         <div className="text-2xl font-bold">
-                          {data.statsJson.years}+
+                          {normalizedStats.years}+
                         </div>
                         <div className="text-xs text-muted-foreground uppercase tracking-wide">
                           Years
                         </div>
                       </div>
                     )}
-                    {data.statsJson.homesSold && (
+                    {normalizedStats.homesSold && (
                       <div className="text-center">
                         <div className="flex items-center justify-center mb-1">
                           <Home className="w-5 h-5 text-primary mr-2" />
                         </div>
                         <div className="text-2xl font-bold">
-                          {data.statsJson.homesSold}+
+                          {normalizedStats.homesSold}
                         </div>
                         <div className="text-xs text-muted-foreground uppercase tracking-wide">
                           Homes Sold
                         </div>
                       </div>
                     )}
-                    {data.statsJson.volume && (
+                    {normalizedStats.volume && (
                       <div className="text-center">
                         <div className="flex items-center justify-center mb-1">
                           <DollarSign className="w-5 h-5 text-primary mr-2" />
                         </div>
                         <div className="text-2xl font-bold">
-                          {data.statsJson.volume}
+                          {normalizedStats.volume}
                         </div>
                         <div className="text-xs text-muted-foreground uppercase tracking-wide">
                           Volume
