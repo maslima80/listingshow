@@ -18,11 +18,13 @@ interface Testimonial {
 
 interface TestimonialsBlockProps {
   settings: TestimonialsBlockSettings
+  teamId?: string
   isPreview?: boolean
 }
 
 export function TestimonialsBlock({
   settings,
+  teamId,
   isPreview = false,
 }: TestimonialsBlockProps) {
   const {
@@ -47,20 +49,21 @@ export function TestimonialsBlock({
         if (!response.ok) throw new Error('Failed to fetch')
         const data = await response.json()
         
-        // Filter approved testimonials
+        // Filter approved testimonials only
         const approved = data.filter((t: any) => t.status === 'approved')
         
         // Filter by selected IDs or use all
-        const filtered = testimonialIds === 'all' || testimonialIds.length === 0
+        const filtered = testimonialIds === 'all' || !testimonialIds || testimonialIds.length === 0
           ? approved
           : approved.filter((t: Testimonial) => testimonialIds.includes(t.id))
 
         // Apply limit
-        const limited = filtered.slice(0, limit)
+        const limited = filtered.slice(0, limit || 10)
         
         setTestimonials(limited)
       } catch (error) {
         console.error('Error fetching testimonials:', error)
+        setTestimonials([])
       } finally {
         setLoading(false)
       }

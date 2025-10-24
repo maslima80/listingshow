@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
-import { Trash2, Image as ImageIcon, Video as VideoIcon, Loader2, Upload } from 'lucide-react'
+import { Trash2, Image as ImageIcon, Video as VideoIcon, Loader2, Upload, Star } from 'lucide-react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,9 +30,11 @@ interface Media {
 
 interface NeighborhoodMediaManagerProps {
   neighborhoodId: string
+  currentCoverUrl?: string | null
+  onCoverChange?: () => void
 }
 
-export function NeighborhoodMediaManager({ neighborhoodId }: NeighborhoodMediaManagerProps) {
+export function NeighborhoodMediaManager({ neighborhoodId, currentCoverUrl, onCoverChange }: NeighborhoodMediaManagerProps) {
   const [media, setMedia] = useState<Media[]>([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
@@ -170,6 +172,33 @@ export function NeighborhoodMediaManager({ neighborhoodId }: NeighborhoodMediaMa
     e.target.value = ''
   }
 
+  const handleSetCover = async (mediaUrl: string) => {
+    try {
+      const response = await fetch(`/api/neighborhoods/${neighborhoodId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          coverImageUrl: mediaUrl,
+        }),
+      })
+
+      if (!response.ok) throw new Error('Failed to set cover')
+
+      toast({
+        title: 'Success',
+        description: 'Cover image updated',
+      })
+
+      onCoverChange?.()
+    } catch (error) {
+      console.error('Error setting cover:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to set cover',
+      })
+    }
+  }
+
   const handleDeleteMedia = async () => {
     if (!mediaToDelete) return
 
@@ -186,12 +215,12 @@ export function NeighborhoodMediaManager({ neighborhoodId }: NeighborhoodMediaMa
       })
 
       fetchMedia()
+      onCoverChange?.()
     } catch (error) {
       console.error('Error deleting media:', error)
       toast({
         title: 'Error',
         description: 'Failed to delete media',
-        variant: 'destructive',
       })
     } finally {
       setDeleteDialogOpen(false)
@@ -265,43 +294,67 @@ export function NeighborhoodMediaManager({ neighborhoodId }: NeighborhoodMediaMa
             Videos ({videos.length})
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {videos.map((item) => (
-              <Card key={item.id} className="overflow-hidden group">
-                <div className="relative aspect-[2/3] bg-black rounded-lg overflow-hidden">
-                  {item.thumbUrl ? (
-                    <img
-                      src={item.thumbUrl}
-                      alt="Video thumbnail"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <VideoIcon className="w-12 h-12 text-white/50" />
-                    </div>
-                  )}
-                  
-                  {/* Delete Button */}
-                  <Button
-                    size="icon"
-                    variant="destructive"
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => {
-                      setMediaToDelete(item)
-                      setDeleteDialogOpen(true)
-                    }}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+            {videos.map((item) => {
+              const isCover = currentCoverUrl === item.thumbUrl || currentCoverUrl === item.url
+              return (
+                <Card key={item.id} className={`overflow-hidden group ${isCover ? 'ring-2 ring-primary' : ''}`}>
+                  <div className="relative aspect-[2/3] bg-black rounded-lg overflow-hidden">
+                    {item.thumbUrl ? (
+                      <img
+                        src={item.thumbUrl}
+                        alt="Video thumbnail"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <VideoIcon className="w-12 h-12 text-white/50" />
+                      </div>
+                    )}
+                    
+                    {/* Cover Badge */}
+                    {isCover && (
+                      <div className="absolute top-2 left-2">
+                        <div className="px-2 py-1 rounded bg-primary text-primary-foreground text-xs font-semibold flex items-center gap-1">
+                          <Star className="w-3 h-3 fill-current" />
+                          Cover
+                        </div>
+                      </div>
+                    )}
 
-                  {/* Duration Badge */}
-                  {item.durationSec && item.durationSec > 0 && (
-                    <div className="absolute bottom-2 right-2 px-2 py-1 rounded bg-black/70 text-white text-xs">
-                      {Math.floor(item.durationSec / 60)}:{String(item.durationSec % 60).padStart(2, '0')}
+                    {/* Hover Actions */}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      {!isCover && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handleSetCover(item.thumbUrl || item.url)}
+                        >
+                          <Star className="w-4 h-4 mr-1" />
+                          Set Cover
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => {
+                          setMediaToDelete(item)
+                          setDeleteDialogOpen(true)
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
-                  )}
-                </div>
-              </Card>
-            ))}
+
+                    {/* Duration Badge */}
+                    {item.durationSec && item.durationSec > 0 && (
+                      <div className="absolute bottom-2 right-2 px-2 py-1 rounded bg-black/70 text-white text-xs">
+                        {Math.floor(item.durationSec / 60)}:{String(item.durationSec % 60).padStart(2, '0')}
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              )
+            })}
           </div>
         </div>
       )}
@@ -314,30 +367,54 @@ export function NeighborhoodMediaManager({ neighborhoodId }: NeighborhoodMediaMa
             Photos ({photos.length})
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {photos.map((item) => (
-              <Card key={item.id} className="overflow-hidden group">
-                <div className="relative aspect-square bg-muted">
-                  <img
-                    src={item.url}
-                    alt={item.caption || 'Neighborhood photo'}
-                    className="w-full h-full object-cover"
-                  />
-                  
-                  {/* Delete Button */}
-                  <Button
-                    size="icon"
-                    variant="destructive"
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => {
-                      setMediaToDelete(item)
-                      setDeleteDialogOpen(true)
-                    }}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </Card>
-            ))}
+            {photos.map((item) => {
+              const isCover = currentCoverUrl === item.url
+              return (
+                <Card key={item.id} className={`overflow-hidden group ${isCover ? 'ring-2 ring-primary' : ''}`}>
+                  <div className="relative aspect-square bg-muted">
+                    <img
+                      src={item.url}
+                      alt={item.caption || 'Neighborhood photo'}
+                      className="w-full h-full object-cover"
+                    />
+                    
+                    {/* Cover Badge */}
+                    {isCover && (
+                      <div className="absolute top-2 left-2">
+                        <div className="px-2 py-1 rounded bg-primary text-primary-foreground text-xs font-semibold flex items-center gap-1">
+                          <Star className="w-3 h-3 fill-current" />
+                          Cover
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Hover Actions */}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      {!isCover && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handleSetCover(item.url)}
+                        >
+                          <Star className="w-4 h-4 mr-1" />
+                          Set Cover
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => {
+                          setMediaToDelete(item)
+                          setDeleteDialogOpen(true)
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              )
+            })}
           </div>
         </div>
       )}

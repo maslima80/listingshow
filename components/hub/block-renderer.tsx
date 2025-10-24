@@ -59,12 +59,19 @@ export function BlockRenderer({
         <NeighborhoodsBlock
           settings={settings}
           teamSlug={teamSlug}
+          teamId={teamId}
           isPreview={isPreview}
         />
       )
 
     case 'testimonials':
-      return <TestimonialsBlock settings={settings} isPreview={isPreview} />
+      return (
+        <TestimonialsBlock
+          settings={settings}
+          teamId={teamId}
+          isPreview={isPreview}
+        />
+      )
 
     case 'valuation':
       return (
@@ -76,7 +83,13 @@ export function BlockRenderer({
       )
 
     case 'lead_magnet':
-      return <LeadMagnetBlock settings={settings} isPreview={isPreview} />
+      return (
+        <LeadMagnetBlock
+          settings={settings}
+          teamId={teamId}
+          isPreview={isPreview}
+        />
+      )
 
     case 'contact':
       return (

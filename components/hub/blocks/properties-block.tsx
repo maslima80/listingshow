@@ -74,6 +74,7 @@ export function PropertiesBlock({
         setProperties(filtered)
       } catch (error) {
         console.error('Error fetching properties:', error)
+        setProperties([])
       } finally {
         setLoading(false)
       }

@@ -18,11 +18,13 @@ interface Resource {
 
 interface LeadMagnetBlockProps {
   settings: LeadMagnetBlockSettings
+  teamId?: string
   isPreview?: boolean
 }
 
 export function LeadMagnetBlock({
   settings,
+  teamId,
   isPreview = false,
 }: LeadMagnetBlockProps) {
   const {
@@ -54,6 +56,7 @@ export function LeadMagnetBlock({
         setResource(data)
       } catch (error) {
         console.error('Error fetching resource:', error)
+        setResource(null)
       }
     }
 

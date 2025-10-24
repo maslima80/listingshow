@@ -17,12 +17,14 @@ interface Neighborhood {
 interface NeighborhoodsBlockProps {
   settings: NeighborhoodsBlockSettings
   teamSlug: string
+  teamId?: string
   isPreview?: boolean
 }
 
 export function NeighborhoodsBlock({
   settings,
   teamSlug,
+  teamId,
   isPreview = false,
 }: NeighborhoodsBlockProps) {
   const {
@@ -39,18 +41,23 @@ export function NeighborhoodsBlock({
   useEffect(() => {
     const fetchNeighborhoods = async () => {
       try {
+        // Fetch all published neighborhoods for this team
         const response = await fetch('/api/neighborhoods')
         if (!response.ok) throw new Error('Failed to fetch')
         const data = await response.json()
         
-        // Filter by selected IDs
-        const filtered = neighborhoodIds.length > 0
-          ? data.filter((n: Neighborhood) => neighborhoodIds.includes(n.id))
-          : data
+        // Filter published neighborhoods only
+        const published = data.filter((n: any) => n.isPublished)
+        
+        // Filter by selected IDs if specified
+        const filtered = neighborhoodIds && neighborhoodIds.length > 0
+          ? published.filter((n: Neighborhood) => neighborhoodIds.includes(n.id))
+          : published
 
         setNeighborhoods(filtered)
       } catch (error) {
         console.error('Error fetching neighborhoods:', error)
+        setNeighborhoods([])
       } finally {
         setLoading(false)
       }

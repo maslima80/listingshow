@@ -39,6 +39,7 @@ export function NeighborhoodDialog({ open, onOpenChange, neighborhood, onSave }:
   const [description, setDescription] = useState('')
   const [isPublished, setIsPublished] = useState(false)
   const [neighborhoodId, setNeighborhoodId] = useState<string | null>(null)
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -49,6 +50,7 @@ export function NeighborhoodDialog({ open, onOpenChange, neighborhood, onSave }:
       setDescription(neighborhood.description || '')
       setIsPublished(neighborhood.isPublished)
       setNeighborhoodId(neighborhood.id)
+      setCoverImageUrl(neighborhood.coverImageUrl)
       setActiveTab('details')
     } else {
       // Reset form
@@ -58,6 +60,7 @@ export function NeighborhoodDialog({ open, onOpenChange, neighborhood, onSave }:
       setDescription('')
       setIsPublished(false)
       setNeighborhoodId(null)
+      setCoverImageUrl(null)
       setActiveTab('details')
     }
   }, [neighborhood, open])
@@ -249,7 +252,22 @@ export function NeighborhoodDialog({ open, onOpenChange, neighborhood, onSave }:
 
           <TabsContent value="media" className="flex-1 overflow-y-auto mt-4">
             {neighborhoodId ? (
-              <NeighborhoodMediaManager neighborhoodId={neighborhoodId} />
+              <NeighborhoodMediaManager 
+                neighborhoodId={neighborhoodId} 
+                currentCoverUrl={coverImageUrl}
+                onCoverChange={async () => {
+                  // Refresh neighborhood data to get updated cover
+                  try {
+                    const response = await fetch(`/api/neighborhoods/${neighborhoodId}`)
+                    if (response.ok) {
+                      const data = await response.json()
+                      setCoverImageUrl(data.coverImageUrl)
+                    }
+                  } catch (error) {
+                    console.error('Error refreshing cover:', error)
+                  }
+                }}
+              />
             ) : (
               <div className="text-center p-12 text-muted-foreground">
                 Save the neighborhood details first to add media
