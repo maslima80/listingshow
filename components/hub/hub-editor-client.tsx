@@ -10,7 +10,96 @@ import { SortableBlockItem } from './sortable-block-item'
 import { AddBlockDialog } from './add-block-dialog'
 import { HubPreview } from './hub-preview'
 import { useToast } from '@/hooks/use-toast'
-import { HubBlock, HubBlockType } from '@/lib/types/hub-blocks'
+import { HubBlock, HubBlockType, HubBlockSettings } from '@/lib/types/hub-blocks'
+
+// Default settings for each block type
+function getDefaultSettings(type: HubBlockType): HubBlockSettings | null {
+  switch (type) {
+    case 'hero':
+      return {
+        backgroundType: 'gradient',
+        gradientFrom: '#1e3a8a',
+        gradientTo: '#7c3aed',
+        headline: 'Welcome to My Hub',
+        tagline: 'Your trusted real estate partner',
+        textPosition: 'center',
+        overlayOpacity: 0.4,
+      }
+    case 'about':
+      return {
+        layout: 'left',
+        showStats: false,
+        showCredentials: false,
+      }
+    case 'properties':
+      return {
+        displayType: 'grid',
+        propertyFilter: 'all',
+        limit: 6,
+        showStatusBadge: true,
+        autoRotate: false,
+        columns: 3,
+      }
+    case 'neighborhoods':
+      return {
+        displayType: 'cards',
+        neighborhoodIds: [],
+        showStats: false,
+        ctaText: 'Explore Area',
+        columns: 3,
+      }
+    case 'testimonials':
+      return {
+        displayType: 'carousel',
+        testimonialIds: 'all',
+        showPhotos: true,
+        showRatings: true,
+        showVideo: false,
+        autoRotate: true,
+        rotationSpeed: 5000,
+        limit: 10,
+      }
+    case 'valuation':
+      return {
+        headline: 'What\'s Your Home Worth?',
+        description: 'Get a free, no-obligation market analysis of your property.',
+        formFields: ['name', 'email', 'phone', 'address'],
+        ctaText: 'Get My Valuation',
+        successMessage: 'Thank you! I\'ll send your valuation within 24 hours.',
+      }
+    case 'lead_magnet':
+      return {
+        resourceId: '',
+        headline: 'Download Free Resource',
+        description: 'Get instant access to this valuable guide.',
+        formFields: ['name', 'email'],
+        ctaText: 'Download Now',
+      }
+    case 'contact':
+      return {
+        headline: 'Let\'s Talk Real Estate',
+        showPhone: true,
+        showEmail: true,
+        showSchedule: false,
+        showWhatsapp: false,
+        showContactForm: true,
+      }
+    case 'social_footer':
+      return {
+        socialLinks: {},
+        showBrokerageDisclosure: true,
+        showPoweredBy: true,
+      }
+    case 'mortgage':
+      return {
+        defaultRate: 6.5,
+        defaultDownPayment: 20,
+        showLenderCta: false,
+      }
+    default:
+      return null
+  }
+}
 
 interface Block extends HubBlock {
   property?: {
@@ -155,13 +244,17 @@ export function HubEditorClient({ teamSlug, accentColor, themeMode, backgroundCo
 
   const handleAddBlock = async (blockData: Omit<Block, 'id' | 'position' | 'isVisible'>) => {
     try {
+      // Add default settings for premium blocks
+      const blockWithSettings = {
+        ...blockData,
+        position: blocks.length,
+        settingsJson: blockData.settingsJson || getDefaultSettings(blockData.type),
+      }
+
       const res = await fetch('/api/hub/blocks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...blockData,
-          position: blocks.length,
-        }),
+        body: JSON.stringify(blockWithSettings),
       })
 
       if (!res.ok) throw new Error('Failed to create block')

@@ -8,12 +8,31 @@ import { z } from 'zod'
 
 // Schema for creating/updating blocks
 const blockSchema = z.object({
-  type: z.enum(['property', 'link', 'image', 'video', 'text']),
+  type: z.enum([
+    'hero',
+    'about',
+    'properties',
+    'neighborhoods',
+    'testimonials',
+    'blog',
+    'valuation',
+    'mortgage',
+    'lead_magnet',
+    'contact',
+    'social_footer',
+    'property',
+    'link',
+    'image',
+    'video',
+    'text',
+    'spacer',
+  ]),
   title: z.string().optional().nullable(),
   subtitle: z.string().optional().nullable(),
   url: z.string().optional().nullable(),
   mediaUrl: z.string().optional().nullable(),
   propertyId: z.string().optional().nullable(),
+  settingsJson: z.any().optional().nullable(), // For premium blocks
   position: z.number().int().default(0),
   isVisible: z.boolean().default(true),
 })

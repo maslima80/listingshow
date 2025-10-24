@@ -4,7 +4,10 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { GripVertical, Eye, EyeOff, Trash2, Pencil, Link as LinkIcon, Image, Video, FileText, Building2 } from 'lucide-react'
+import { 
+  GripVertical, Eye, EyeOff, Trash2, Pencil, Link as LinkIcon, Image, Video, FileText, Building2,
+  Sparkles, User, Home, MapPin, Star, DollarSign, Calculator, Download, Phone, Share2, Minus
+} from 'lucide-react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,7 +22,9 @@ import {
 
 interface Block {
   id: string
-  type: 'property' | 'link' | 'image' | 'video' | 'text'
+  type: 'hero' | 'about' | 'properties' | 'neighborhoods' | 'testimonials' | 'blog' | 
+        'valuation' | 'mortgage' | 'lead_magnet' | 'contact' | 'social_footer' |
+        'property' | 'link' | 'image' | 'video' | 'text' | 'spacer'
   title?: string | null
   subtitle?: string | null
   url?: string | null
@@ -44,19 +49,43 @@ interface SortableBlockItemProps {
 }
 
 const blockIcons = {
+  hero: Sparkles,
+  about: User,
+  properties: Home,
+  neighborhoods: MapPin,
+  testimonials: Star,
+  blog: FileText,
+  valuation: DollarSign,
+  mortgage: Calculator,
+  lead_magnet: Download,
+  contact: Phone,
+  social_footer: Share2,
   property: Building2,
   link: LinkIcon,
   image: Image,
   video: Video,
   text: FileText,
+  spacer: Minus,
 }
 
 const blockLabels = {
+  hero: 'Hero Section',
+  about: 'About Me',
+  properties: 'Featured Properties',
+  neighborhoods: 'Neighborhoods',
+  testimonials: 'Testimonials',
+  blog: 'Blog Posts',
+  valuation: 'Home Valuation',
+  mortgage: 'Mortgage Calculator',
+  lead_magnet: 'Lead Magnet',
+  contact: 'Contact',
+  social_footer: 'Social Footer',
   property: 'Property',
   link: 'Link',
   image: 'Image',
   video: 'Video',
   text: 'Text',
+  spacer: 'Spacer',
 }
 
 export function SortableBlockItem({ block, onToggleVisibility, onDelete, onEdit }: SortableBlockItemProps) {
