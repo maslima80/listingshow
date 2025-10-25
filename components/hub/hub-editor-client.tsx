@@ -112,6 +112,34 @@ function getDefaultSettings(type: HubBlockType): HubBlockSettings | null {
         showPrivacyNote: true,
         anchorId: 'valuation',
       }
+    case 'mortgage':
+      return {
+        headline: 'Mortgage Calculator',
+        subline: 'Estimate your monthly payment.',
+        presetMode: 'generic',
+        defaults: {
+          homePrice: 500000,
+          downPaymentType: 'percent',
+          downPayment: 20,
+          interestRate: 6.5,
+          loanTermYears: 30,
+          propertyTaxRate: 1.25,
+          homeInsuranceAnnual: 1200,
+          hoaMonthly: 0,
+          pmiEnabled: true,
+          pmiRate: 0.5,
+          pmiAutoCancelAtLTV: 80,
+          pointsPercent: 0,
+          closingCostsPercent: 0,
+        },
+        leadCapture: {
+          enabled: false,
+          ctaLabel: 'Get a personalized quote',
+          consentLabel: 'I agree to be contacted about mortgage options.',
+        },
+        disclaimer: 'This is an estimate for educational purposes and is not financial advice. Taxes, insurance, HOA and rates vary by lender and region.',
+        anchorId: 'mortgage',
+      }
     case 'lead_magnet':
       return {
         resourceId: '',

@@ -8,6 +8,7 @@ import { NeighborhoodsBlock } from './blocks/neighborhoods-block'
 import { TestimonialsBlock } from './blocks/testimonials-block'
 import { ContactBlock } from './blocks/contact-block'
 import { ValuationBlockV2 } from './blocks/valuation-block-v2'
+import { MortgageCalculatorBlock } from './blocks/mortgage-calculator-block'
 import { LeadMagnetBlock } from './blocks/lead-magnet-block'
 import { SocialFooterBlock } from './blocks/social-footer-block'
 
@@ -80,6 +81,15 @@ export function BlockRenderer({
     case 'valuation':
       return (
         <ValuationBlockV2
+          settings={settings}
+          teamId={teamId}
+          isPreview={isPreview}
+        />
+      )
+
+    case 'mortgage':
+      return (
+        <MortgageCalculatorBlock
           settings={settings}
           teamId={teamId}
           isPreview={isPreview}

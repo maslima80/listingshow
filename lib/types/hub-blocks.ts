@@ -191,6 +191,35 @@ export interface ContactBlockSettings {
   anchorId: string;
 }
 
+// Mortgage Calculator Block Settings
+export interface MortgageBlockSettings {
+  headline: string;
+  subline: string;
+  presetMode: 'generic' | 'property_context';
+  defaults: {
+    homePrice: number;
+    downPaymentType: 'percent' | 'amount';
+    downPayment: number;
+    interestRate: number;
+    loanTermYears: number;
+    propertyTaxRate: number;
+    homeInsuranceAnnual: number;
+    hoaMonthly: number;
+    pmiEnabled: boolean;
+    pmiRate: number;
+    pmiAutoCancelAtLTV: number;
+    pointsPercent: number;
+    closingCostsPercent: number;
+  };
+  leadCapture: {
+    enabled: boolean;
+    ctaLabel: string;
+    consentLabel: string;
+  };
+  disclaimer: string;
+  anchorId: string;
+}
+
 // Simple block types (existing)
 export interface LinkBlockSettings {
   url: string;
