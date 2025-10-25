@@ -119,6 +119,7 @@ export function ContactBlock({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          teamId: teamId,
           type: 'message',
           source: 'contact_block',
           name: formData.name,
@@ -296,6 +297,13 @@ export function ContactBlock({
           id="contact-form"
         >
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-8 md:p-10 border border-slate-200 dark:border-slate-800">
+            {success && (
+              <div className="mb-6 p-4 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900 rounded-lg">
+                <p className="text-green-900 dark:text-green-100 font-medium">
+                  ✓ Message sent successfully! We'll get back to you shortly.
+                </p>
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <Label htmlFor="name" className="text-sm font-medium mb-2 block">

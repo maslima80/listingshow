@@ -114,7 +114,8 @@ export function ValuationBlockV2({
     setSubmitting(true)
     try {
       const payload = {
-        type: 'valuation',
+        teamId: teamId,
+        type: 'valuation' as const,
         source: 'home_valuation_block',
         property: {
           address: propertyData.address,

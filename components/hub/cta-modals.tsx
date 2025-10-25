@@ -60,6 +60,7 @@ export function ContactModal({ open, onOpenChange, teamId, source = 'hero_cta' }
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          teamId,
           type: 'message',
           source,
           name: data.name,
@@ -223,6 +224,7 @@ export function ScheduleTourModal({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          teamId,
           type: 'tour_request',
           source,
           name: data.name,

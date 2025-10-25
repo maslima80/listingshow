@@ -8,15 +8,33 @@ import { notifyLeadReceived } from "@/lib/notifications";
 
 // Validation schema
 const createLeadSchema = z.object({
-  propertyId: z.string().uuid(),
-  type: z.enum(['tour_request', 'message']),
-  name: z.string().min(2, "Name must be at least 2 characters").max(120),
-  email: z.string().email("Invalid email address").max(160),
+  propertyId: z.string().uuid().optional(), // Optional for hub blocks
+  teamId: z.string().uuid().optional(), // For hub blocks without property
+  type: z.enum(['tour_request', 'message', 'valuation']),
+  name: z.string().min(2, "Name must be at least 2 characters").max(120).optional(), // Optional for valuation (uses contact.name)
+  email: z.string().email("Invalid email address").max(160).optional(), // Optional for valuation (uses contact.email)
   phone: z.string().max(40).optional(),
   preferredDate: z.string().optional(), // ISO date string
   preferredTimeWindow: z.enum(['morning', 'afternoon', 'evening']).optional(),
   message: z.string().max(2000).optional(),
   source: z.string().max(64).optional(),
+  // Valuation-specific fields
+  property: z.object({
+    address: z.string().optional(),
+    propertyType: z.string().optional(),
+    bedrooms: z.number().optional(),
+    bathrooms: z.number().optional(),
+    squareFeet: z.number().optional(),
+    condition: z.string().optional(),
+    notes: z.string().optional(),
+  }).optional(),
+  contact: z.object({
+    name: z.string(),
+    email: z.string(),
+    phone: z.string().optional(),
+    preferredContact: z.string().optional(),
+    bestTime: z.string().optional(),
+  }).optional(),
 });
 
 // Helper to hash IP for rate limiting
@@ -32,21 +50,56 @@ export async function POST(request: NextRequest) {
     // Validate input
     const validated = createLeadSchema.parse(body);
 
-    // Look up property to get teamId
-    const property = await db.query.properties.findFirst({
-      where: eq(properties.id, validated.propertyId),
-      columns: {
-        id: true,
-        teamId: true,
-        title: true,
-        slug: true,
-      },
-    });
+    // Additional validation: ensure name/email are provided (either top-level or in contact)
+    if (validated.type !== 'valuation') {
+      if (!validated.name || !validated.email) {
+        return NextResponse.json(
+          { error: "Name and email are required" },
+          { status: 400 }
+        );
+      }
+    } else {
+      // For valuation, require contact object with name and email
+      if (!validated.contact || !validated.contact.name || !validated.contact.email) {
+        return NextResponse.json(
+          { error: "Contact information is required for valuation" },
+          { status: 400 }
+        );
+      }
+    }
 
-    if (!property) {
+    // Determine teamId - either from property or directly provided (hub blocks)
+    let targetTeamId: string;
+    let property: { id: string; teamId: string; title: string; slug: string } | undefined;
+
+    if (validated.propertyId) {
+      // Property-specific lead
+      const prop = await db.query.properties.findFirst({
+        where: eq(properties.id, validated.propertyId),
+        columns: {
+          id: true,
+          teamId: true,
+          title: true,
+          slug: true,
+        },
+      });
+
+      if (!prop) {
+        return NextResponse.json(
+          { error: "Property not found" },
+          { status: 404 }
+        );
+      }
+
+      property = prop;
+      targetTeamId = prop.teamId;
+    } else if (validated.teamId) {
+      // Hub block lead (no property)
+      targetTeamId = validated.teamId;
+    } else {
       return NextResponse.json(
-        { error: "Property not found" },
-        { status: 404 }
+        { error: "Either propertyId or teamId is required" },
+        { status: 400 }
       );
     }
 
@@ -74,19 +127,42 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Prepare lead data
+    let leadName = validated.name;
+    let leadEmail = validated.email;
+    let leadPhone = validated.phone || null;
+    let leadMessage = validated.message || null;
+
+    // For valuation leads, extract from nested contact object
+    if (validated.type === 'valuation' && validated.contact) {
+      leadName = validated.contact.name;
+      leadEmail = validated.contact.email;
+      leadPhone = validated.contact.phone || null;
+      // Store property details in message field for now
+      if (validated.property) {
+        leadMessage = JSON.stringify({
+          property: validated.property,
+          contact: {
+            preferredContact: validated.contact.preferredContact,
+            bestTime: validated.contact.bestTime,
+          },
+        });
+      }
+    }
+
     // Create the lead
     const [lead] = await db
       .insert(leads)
       .values({
-        teamId: property.teamId,
-        propertyId: validated.propertyId,
+        teamId: targetTeamId,
+        propertyId: validated.propertyId || null,
         type: validated.type,
-        name: validated.name,
-        email: validated.email,
-        phone: validated.phone || null,
+        name: leadName,
+        email: leadEmail,
+        phone: leadPhone,
         preferredDate: validated.preferredDate ? new Date(validated.preferredDate) : null,
         preferredTimeWindow: validated.preferredTimeWindow || null,
-        message: validated.message || null,
+        message: leadMessage,
         source: validated.source || null,
         userAgent: userAgent,
         ipHash: ipHash,
@@ -96,7 +172,7 @@ export async function POST(request: NextRequest) {
 
     // Get team info for notification
     const team = await db.query.teams.findFirst({
-      where: eq(teams.id, property.teamId),
+      where: eq(teams.id, targetTeamId),
       columns: {
         name: true,
       },
@@ -116,10 +192,10 @@ export async function POST(request: NextRequest) {
           message: lead.message,
           source: lead.source,
         },
-        {
+        property ? {
           title: property.title,
           slug: property.slug,
-        },
+        } : undefined,
         {
           name: team?.name || 'Team',
         }
