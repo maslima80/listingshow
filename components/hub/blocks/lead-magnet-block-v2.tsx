@@ -72,7 +72,17 @@ export function LeadMagnetBlockV2({
 
   const triggerDownload = () => {
     if (resolvedUrl) {
-      window.open(resolvedUrl, '_blank')
+      // Use proxy endpoint to force download (handles CORS issues with external files)
+      const filename = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`
+      const downloadUrl = `/api/download?url=${encodeURIComponent(resolvedUrl)}&filename=${encodeURIComponent(filename)}`
+      
+      // Create a temporary anchor element to trigger download
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
       // TODO: Fire analytics: 'lead_magnet_download'
     }
   }
@@ -86,7 +96,6 @@ export function LeadMagnetBlockV2({
       toast({
         title: 'Consent required',
         description: 'Please agree to the terms to continue.',
-        variant: 'destructive',
       })
       return
     }
@@ -100,11 +109,11 @@ export function LeadMagnetBlockV2({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           teamId,
-          type: 'lead_magnet',
+          type: 'message',
           name: formData.name,
           email: formData.email,
           phone: gate.requirePhone ? formData.phone : undefined,
-          message: `Downloaded: ${title}`,
+          message: `Lead Magnet Download: ${title}`,
           source: 'hub_lead_magnet',
         }),
       })
@@ -136,7 +145,6 @@ export function LeadMagnetBlockV2({
       toast({
         title: 'Error',
         description: 'Failed to process your request. Please try again.',
-        variant: 'destructive',
       })
     } finally {
       setSubmitting(false)
@@ -210,20 +218,20 @@ export function LeadMagnetBlockV2({
               </div>
             ) : (
               /* Banner Layout */
-              <div className="relative">
+              <div className="relative min-h-[300px]">
                 {/* Background with thumbnail */}
                 {displayThumbnail && (
                   <div className="absolute inset-0 overflow-hidden">
                     <img
                       src={displayThumbnail}
                       alt={title}
-                      className="w-full h-full object-cover opacity-20"
+                      className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/40 dark:from-black/80 dark:to-black/60" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/50 dark:from-black/80 dark:to-black/60" />
                   </div>
                 )}
                 
-                <div className={`relative ${displayThumbnail ? 'bg-gradient-to-r from-accent/90 to-accent/70' : 'bg-gradient-to-r from-accent/20 to-accent/10'} p-8 md:p-12`}>
+                <div className={`relative ${displayThumbnail ? '' : 'bg-gradient-to-r from-accent/20 to-accent/10'} p-8 md:p-12`}>
                   <div className="flex flex-col md:flex-row items-center gap-8 max-w-5xl mx-auto">
                     {/* Icon/Thumbnail */}
                     <div className="flex-shrink-0">

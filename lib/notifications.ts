@@ -25,7 +25,7 @@ interface Team {
 
 export async function notifyLeadReceived(
   lead: Lead,
-  property: Property,
+  property: Property | undefined,
   team: Team
 ): Promise<void> {
   // TODO: Implement with Resend
@@ -34,7 +34,9 @@ export async function notifyLeadReceived(
   console.log('📧 New Lead Notification:');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log(`Type: ${lead.type === 'tour_request' ? '🗓️  Tour Request' : '💬 Message'}`);
-  console.log(`Property: ${property.title}`);
+  if (property) {
+    console.log(`Property: ${property.title}`);
+  }
   console.log(`From: ${lead.name} (${lead.email})`);
   
   if (lead.phone) {
@@ -53,7 +55,9 @@ export async function notifyLeadReceived(
   }
   
   console.log(`Source: ${lead.source || 'unknown'}`);
-  console.log(`View Property: /p/${property.slug}`);
+  if (property) {
+    console.log(`View Property: /p/${property.slug}`);
+  }
   console.log(`Manage Lead: /dashboard/leads`);
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   
