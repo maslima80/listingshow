@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2, CheckCircle2, ArrowLeft } from 'lucide-react'
+import { Loader2, CheckCircle2, ArrowLeft, Home, TrendingUp, Clock, X } from 'lucide-react'
 
 interface ValuationBlockProps {
   settings: ValuationBlockSettings
@@ -39,6 +39,7 @@ export function ValuationBlockV2({
     anchorId = 'valuation',
   } = settings
 
+  const [isOpen, setIsOpen] = useState(false)
   const [step, setStep] = useState<1 | 2 | 'success'>(1)
   const [submitting, setSubmitting] = useState(false)
   const { toast } = useToast()
@@ -76,7 +77,7 @@ export function ValuationBlockV2({
     setStep(2)
     // Focus first input of step 2
     setTimeout(() => {
-      document.getElementById('name')?.focus()
+      document.getElementById('valuation-name')?.focus()
     }, 100)
   }
 
@@ -181,28 +182,120 @@ export function ValuationBlockV2({
           )}
         </motion.div>
 
-        {/* Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.1 }}
-          className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-8 md:p-10 border border-slate-200 dark:border-slate-800"
-        >
-          {/* Progress Indicator */}
-          {step !== 'success' && (
-            <div className="mb-8">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <div className={`h-2 w-2 rounded-full ${step === 1 ? 'bg-accent' : 'bg-accent/50'}`} />
-                <div className={`h-2 w-2 rounded-full ${step === 2 ? 'bg-accent' : 'bg-muted'}`} />
-              </div>
-              <p className="text-center text-sm text-muted-foreground">
-                Step {step} of 2
-              </p>
-            </div>
-          )}
+        <AnimatePresence mode="wait">
+          {!isOpen ? (
+            /* Premium CTA Card */
+            <motion.div
+              key="cta-card"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden"
+            >
+              {/* Gradient Header */}
+              <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-transparent p-8 md:p-10 border-b border-slate-200 dark:border-slate-800">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="h-16 w-16 rounded-2xl bg-accent/10 flex items-center justify-center">
+                    <Home className="h-8 w-8" style={{ color: 'var(--accent-color, #C9A66B)' }} />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold mb-1">Free Home Valuation</h3>
+                    <p className="text-muted-foreground">Get your personalized report in 24 hours</p>
+                  </div>
+                </div>
 
-          <AnimatePresence mode="wait">
+                {/* Features */}
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="flex items-start gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-green-100 dark:bg-green-950/30 flex items-center justify-center flex-shrink-0">
+                      <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm mb-1">Market Analysis</p>
+                      <p className="text-xs text-muted-foreground">Current market trends</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-blue-100 dark:bg-blue-950/30 flex items-center justify-center flex-shrink-0">
+                      <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm mb-1">Fast & Free</p>
+                      <p className="text-xs text-muted-foreground">No cost, no obligation</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-purple-100 dark:bg-purple-950/30 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle2 className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm mb-1">Expert Review</p>
+                      <p className="text-xs text-muted-foreground">Local market expert</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div className="p-8 md:p-10">
+                <Button
+                  onClick={() => {
+                    setIsOpen(true)
+                    setTimeout(() => {
+                      document.getElementById('valuation-address')?.focus()
+                    }, 300)
+                  }}
+                  size="lg"
+                  className="w-full h-16 text-lg font-semibold rounded-xl"
+                  style={{ backgroundColor: 'var(--accent-color, #C9A66B)' }}
+                  disabled={isPreview}
+                >
+                  {ctaLabel}
+                </Button>
+                <p className="text-center text-xs text-muted-foreground mt-4">
+                  Takes less than 2 minutes • 100% confidential
+                </p>
+              </div>
+            </motion.div>
+          ) : (
+            /* Wizard Form */
+            <motion.div
+              key="wizard-form"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-8 md:p-10 border border-slate-200 dark:border-slate-800"
+            >
+              {/* Close Button */}
+              {step !== 'success' && (
+                <button
+                  onClick={() => {
+                    setIsOpen(false)
+                    setStep(1)
+                  }}
+                  className="absolute top-6 right-6 h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                  disabled={isPreview}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+
+              {/* Progress Indicator */}
+              {step !== 'success' && (
+                <div className="mb-8">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <div className={`h-2 w-2 rounded-full ${step === 1 ? 'bg-accent' : 'bg-accent/50'}`} />
+                    <div className={`h-2 w-2 rounded-full ${step === 2 ? 'bg-accent' : 'bg-muted'}`} />
+                  </div>
+                  <p className="text-center text-sm text-muted-foreground">
+                    Step {step} of 2
+                  </p>
+                </div>
+              )}
+
+              <AnimatePresence mode="wait">
             {/* Step 1: Property Info */}
             {step === 1 && (
               <motion.div
@@ -215,9 +308,9 @@ export function ValuationBlockV2({
                 <h3 className="text-2xl font-semibold mb-6">Property Information</h3>
                 <div className="space-y-6">
                   <div>
-                    <Label htmlFor="address">Property Address *</Label>
+                    <Label htmlFor="valuation-address">Property Address *</Label>
                     <Input
-                      id="address"
+                      id="valuation-address"
                       value={propertyData.address}
                       onChange={(e) => setPropertyData(prev => ({ ...prev, address: e.target.value }))}
                       placeholder="123 Main Street, City, State"
@@ -227,7 +320,7 @@ export function ValuationBlockV2({
                   </div>
 
                   <div>
-                    <Label htmlFor="propertyType">Property Type *</Label>
+                    <Label htmlFor="valuation-propertyType">Property Type *</Label>
                     <Select
                       value={propertyData.propertyType}
                       onValueChange={(value) => setPropertyData(prev => ({ ...prev, propertyType: value }))}
@@ -247,7 +340,7 @@ export function ValuationBlockV2({
 
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
-                      <Label htmlFor="bedrooms">Bedrooms</Label>
+                      <Label htmlFor="valuation-bedrooms">Bedrooms</Label>
                       <Select
                         value={propertyData.bedrooms}
                         onValueChange={(value) => setPropertyData(prev => ({ ...prev, bedrooms: value }))}
@@ -268,7 +361,7 @@ export function ValuationBlockV2({
                     </div>
 
                     <div>
-                      <Label htmlFor="bathrooms">Bathrooms</Label>
+                      <Label htmlFor="valuation-bathrooms">Bathrooms</Label>
                       <Select
                         value={propertyData.bathrooms}
                         onValueChange={(value) => setPropertyData(prev => ({ ...prev, bathrooms: value }))}
@@ -291,9 +384,9 @@ export function ValuationBlockV2({
                   </div>
 
                   <div>
-                    <Label htmlFor="squareFeet">Square Footage</Label>
+                    <Label htmlFor="valuation-squareFeet">Square Footage</Label>
                     <Input
-                      id="squareFeet"
+                      id="valuation-squareFeet"
                       value={propertyData.squareFeet}
                       onChange={(e) => {
                         const value = e.target.value.replace(/[^\d,]/g, '')
@@ -306,7 +399,7 @@ export function ValuationBlockV2({
                   </div>
 
                   <div>
-                    <Label htmlFor="condition">Property Condition</Label>
+                    <Label htmlFor="valuation-condition">Property Condition</Label>
                     <Select
                       value={propertyData.condition}
                       onValueChange={(value) => setPropertyData(prev => ({ ...prev, condition: value }))}
@@ -325,9 +418,9 @@ export function ValuationBlockV2({
                   </div>
 
                   <div>
-                    <Label htmlFor="notes">Additional Notes</Label>
+                    <Label htmlFor="valuation-notes">Additional Notes</Label>
                     <Textarea
-                      id="notes"
+                      id="valuation-notes"
                       value={propertyData.notes}
                       onChange={(e) => setPropertyData(prev => ({ ...prev, notes: e.target.value }))}
                       placeholder="Any upgrades, features, or renovations?"
@@ -365,9 +458,9 @@ export function ValuationBlockV2({
                 <h3 className="text-2xl font-semibold mb-6">Your Contact Information</h3>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div>
-                    <Label htmlFor="name">Full Name *</Label>
+                    <Label htmlFor="valuation-name">Full Name *</Label>
                     <Input
-                      id="name"
+                      id="valuation-name"
                       value={contactData.name}
                       onChange={(e) => setContactData(prev => ({ ...prev, name: e.target.value }))}
                       placeholder="John Smith"
@@ -378,9 +471,9 @@ export function ValuationBlockV2({
                   </div>
 
                   <div>
-                    <Label htmlFor="email">Email *</Label>
+                    <Label htmlFor="valuation-email">Email *</Label>
                     <Input
-                      id="email"
+                      id="valuation-email"
                       type="email"
                       value={contactData.email}
                       onChange={(e) => setContactData(prev => ({ ...prev, email: e.target.value }))}
@@ -393,9 +486,9 @@ export function ValuationBlockV2({
 
                   {collectPhone && (
                     <div>
-                      <Label htmlFor="phone">Phone</Label>
+                      <Label htmlFor="valuation-phone">Phone</Label>
                       <Input
-                        id="phone"
+                        id="valuation-phone"
                         type="tel"
                         value={contactData.phone}
                         onChange={(e) => setContactData(prev => ({ ...prev, phone: e.target.value }))}
@@ -408,7 +501,7 @@ export function ValuationBlockV2({
 
                   {collectPreferredContact && (
                     <div>
-                      <Label htmlFor="preferredContact">Preferred Contact Method</Label>
+                      <Label htmlFor="valuation-preferredContact">Preferred Contact Method</Label>
                       <Select
                         value={contactData.preferredContact}
                         onValueChange={(value) => setContactData(prev => ({ ...prev, preferredContact: value }))}
@@ -428,7 +521,7 @@ export function ValuationBlockV2({
 
                   {collectBestTime && (
                     <div>
-                      <Label htmlFor="bestTime">Best Time to Contact</Label>
+                      <Label htmlFor="valuation-bestTime">Best Time to Contact</Label>
                       <Select
                         value={contactData.bestTime}
                         onValueChange={(value) => setContactData(prev => ({ ...prev, bestTime: value }))}
@@ -448,9 +541,9 @@ export function ValuationBlockV2({
 
                   {/* Honeypot */}
                   <div className="hidden">
-                    <Label htmlFor={HONEYPOT_FIELD}>Leave blank</Label>
+                    <Label htmlFor={`valuation-${HONEYPOT_FIELD}`}>Leave blank</Label>
                     <Input
-                      id={HONEYPOT_FIELD}
+                      id={`valuation-${HONEYPOT_FIELD}`}
                       value={contactData[HONEYPOT_FIELD]}
                       onChange={(e) => setContactData(prev => ({ ...prev, [HONEYPOT_FIELD]: e.target.value }))}
                       tabIndex={-1}
@@ -461,13 +554,13 @@ export function ValuationBlockV2({
                   {consentLabel && (
                     <div className="flex items-start gap-3">
                       <Checkbox
-                        id="consent"
+                        id="valuation-consent"
                         checked={contactData.consent}
                         onCheckedChange={(checked) => setContactData(prev => ({ ...prev, consent: checked as boolean }))}
                         disabled={submitting || isPreview}
                         className="mt-1"
                       />
-                      <Label htmlFor="consent" className="text-sm leading-relaxed cursor-pointer">
+                      <Label htmlFor="valuation-consent" className="text-sm leading-relaxed cursor-pointer">
                         {consentLabel}
                       </Label>
                     </div>
@@ -542,7 +635,9 @@ export function ValuationBlockV2({
               </motion.div>
             )}
           </AnimatePresence>
-        </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   )

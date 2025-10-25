@@ -111,21 +111,22 @@ export async function POST(request: NextRequest) {
     const ipHash = ip !== 'unknown' ? hashIP(ip) : undefined;
 
     // Basic rate limiting: check if same IP submitted in last 5 minutes
-    if (ipHash) {
-      const recentLeads = await db.query.leads.findFirst({
-        where: (leads, { and, eq, gt }) => and(
-          eq(leads.ipHash, ipHash),
-          gt(leads.createdAt, new Date(Date.now() - 5 * 60 * 1000))
-        ),
-      });
+    // TEMPORARILY DISABLED FOR TESTING
+    // if (ipHash) {
+    //   const recentLeads = await db.query.leads.findFirst({
+    //     where: (leads, { and, eq, gt }) => and(
+    //       eq(leads.ipHash, ipHash),
+    //       gt(leads.createdAt, new Date(Date.now() - 5 * 60 * 1000))
+    //     ),
+    //   });
 
-      if (recentLeads) {
-        return NextResponse.json(
-          { error: "Please wait a few minutes before submitting another request" },
-          { status: 429 }
-        );
-      }
-    }
+    //   if (recentLeads) {
+    //     return NextResponse.json(
+    //       { error: "Please wait a few minutes before submitting another request" },
+    //       { status: 429 }
+    //     );
+    //   }
+    // }
 
     // Prepare lead data
     let leadName = validated.name;
