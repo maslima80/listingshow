@@ -142,11 +142,21 @@ function getDefaultSettings(type: HubBlockType): HubBlockSettings | null {
       }
     case 'lead_magnet':
       return {
-        resourceId: '',
-        headline: 'Download Free Resource',
+        title: 'Download Free Resource',
         description: 'Get instant access to this valuable guide.',
-        formFields: ['name', 'email'],
-        ctaText: 'Download Now',
+        asset: {
+          type: 'file',
+          fileUrl: '',
+          targetUrl: '',
+        },
+        thumbnailUrl: '',
+        ctaLabel: 'Download Free Report',
+        gate: {
+          enabled: true,
+          requirePhone: false,
+          consentLabel: 'I agree to be contacted about real estate opportunities.',
+        },
+        layout: 'card',
       }
     case 'contact':
       return {

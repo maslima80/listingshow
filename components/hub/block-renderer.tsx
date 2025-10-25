@@ -9,7 +9,7 @@ import { TestimonialsBlock } from './blocks/testimonials-block'
 import { ContactBlock } from './blocks/contact-block'
 import { ValuationBlockV2 } from './blocks/valuation-block-v2'
 import { MortgageCalculatorBlock } from './blocks/mortgage-calculator-block'
-import { LeadMagnetBlock } from './blocks/lead-magnet-block'
+import { LeadMagnetBlockV2 } from './blocks/lead-magnet-block-v2'
 import { SocialFooterBlock } from './blocks/social-footer-block'
 
 interface BlockRendererProps {
@@ -98,13 +98,11 @@ export function BlockRenderer({
 
     case 'lead_magnet':
       return (
-        <div id="lead-magnet">
-          <LeadMagnetBlock
-            settings={settings}
-            teamId={teamId}
-            isPreview={isPreview}
-          />
-        </div>
+        <LeadMagnetBlockV2
+          settings={settings}
+          teamId={teamId}
+          isPreview={isPreview}
+        />
       )
 
     case 'contact':

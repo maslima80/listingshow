@@ -170,13 +170,23 @@ export interface MortgageBlockSettings {
 
 // Lead Magnet Block Settings
 export interface LeadMagnetBlockSettings {
-  resourceId: string; // From resources manager
-  headline: string;
-  description: string;
-  coverImageUrl?: string;
-  formFields: ('name' | 'email' | 'phone')[];
-  ctaText: string;
-  backgroundColor?: string;
+  title: string;
+  description?: string;
+  asset: {
+    type: 'file' | 'url';
+    fileUrl?: string;      // ImageKit URL for uploaded file
+    targetUrl?: string;    // External URL
+  };
+  thumbnailUrl?: string;   // ImageKit URL for cover image
+  ctaLabel: string;
+  gate: {
+    enabled: boolean;
+    requirePhone: boolean;
+    consentLabel?: string;
+  };
+  layout: 'card' | 'banner';
+  // Legacy support for resources manager
+  resourceId?: string;
 }
 
 // Contact Block Settings

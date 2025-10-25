@@ -14,6 +14,7 @@ import { TestimonialsSettings } from './settings/testimonials-settings'
 import { ContactSettings } from './settings/contact-settings'
 import { ValuationSettings } from './settings/valuation-settings'
 import { MortgageSettings } from './settings/mortgage-settings'
+import { LeadMagnetSettings } from './settings/lead-magnet-settings'
 
 interface BlockSettingsPanelProps {
   block: HubBlock | null
@@ -102,6 +103,8 @@ export function BlockSettingsPanel({ block, open, onOpenChange, onSave }: BlockS
         return <ValuationSettings settings={settings} onChange={setSettings} />
       case 'mortgage':
         return <MortgageSettings settings={settings} onChange={setSettings} />
+      case 'lead_magnet':
+        return <LeadMagnetSettings settings={settings} onChange={setSettings} />
       default:
         return <p className="text-sm text-muted-foreground">Settings for this block type coming soon...</p>
     }
