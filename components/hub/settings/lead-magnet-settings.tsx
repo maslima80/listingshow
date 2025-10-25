@@ -41,7 +41,23 @@ export function LeadMagnetSettings({ settings, onChange }: LeadMagnetSettingsPro
         const response = await fetch('/api/resources')
         if (!response.ok) throw new Error('Failed to fetch')
         const data = await response.json()
-        setResources(data.filter((r: Resource) => r.isActive))
+        const activeResources = data.filter((r: Resource) => r.isActive)
+        setResources(activeResources)
+        
+        // Match current fileUrl to a resource to show selection
+        if (localSettings.asset.fileUrl && localSettings.asset.type === 'file') {
+          const matchedResource = activeResources.find(
+            (r: Resource) => r.fileUrl === localSettings.asset.fileUrl
+          )
+          if (matchedResource) {
+            setSelectedResourceId(matchedResource.id)
+          }
+        }
+        
+        // Or use legacy resourceId if present
+        if (localSettings.resourceId) {
+          setSelectedResourceId(localSettings.resourceId)
+        }
       } catch (error) {
         console.error('Error fetching resources:', error)
       } finally {
@@ -64,6 +80,7 @@ export function LeadMagnetSettings({ settings, onChange }: LeadMagnetSettingsPro
           fileUrl: resource.fileUrl,
         },
         thumbnailUrl: resource.coverImageUrl || '',
+        resourceId: resourceId, // Store for persistence
       })
     }
   }
@@ -300,13 +317,19 @@ export function LeadMagnetSettings({ settings, onChange }: LeadMagnetSettingsPro
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="card" id="layout-card" />
                 <Label htmlFor="layout-card" className="cursor-pointer">
-                  Card (Recommended)
+                  <div>
+                    <div className="font-medium">Card</div>
+                    <div className="text-xs text-muted-foreground">Vertical layout with thumbnail on left</div>
+                  </div>
                 </Label>
               </div>
-              <div className="flex items-center space-x-2 opacity-50">
-                <RadioGroupItem value="banner" id="layout-banner" disabled />
-                <Label htmlFor="layout-banner" className="cursor-not-allowed">
-                  Banner (Coming Soon)
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="banner" id="layout-banner" />
+                <Label htmlFor="layout-banner" className="cursor-pointer">
+                  <div>
+                    <div className="font-medium">Banner</div>
+                    <div className="text-xs text-muted-foreground">Full-width horizontal layout with background image</div>
+                  </div>
                 </Label>
               </div>
             </RadioGroup>

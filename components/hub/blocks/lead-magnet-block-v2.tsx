@@ -146,66 +146,135 @@ export function LeadMagnetBlockV2({
   return (
     <>
       <section className="py-16 px-6">
-        <div className="max-w-4xl mx-auto">
+        <div className={layout === 'banner' ? 'max-w-6xl mx-auto' : 'max-w-4xl mx-auto'}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-3xl transition-shadow duration-300"
           >
-            <div className="grid md:grid-cols-5">
-              {/* Thumbnail */}
-              <div className="md:col-span-2 relative bg-gradient-to-br from-accent/10 to-accent/5 flex items-center justify-center p-8">
-                {displayThumbnail ? (
-                  <img
-                    src={displayThumbnail}
-                    alt={title}
-                    className="w-full h-64 md:h-full object-cover rounded-lg"
-                  />
-                ) : (
-                  <div className="flex flex-col items-center justify-center text-center">
-                    <div className="h-24 w-24 rounded-2xl bg-accent/10 flex items-center justify-center mb-4">
-                      <FileText className="h-12 w-12" style={{ color: 'var(--accent-color, #C9A66B)' }} />
+            {layout === 'card' ? (
+              /* Card Layout */
+              <div className="grid md:grid-cols-5">
+                {/* Thumbnail */}
+                <div className="md:col-span-2 relative bg-gradient-to-br from-accent/10 to-accent/5 flex items-center justify-center p-8">
+                  {displayThumbnail ? (
+                    <img
+                      src={displayThumbnail}
+                      alt={title}
+                      className="w-full h-64 md:h-full object-cover rounded-lg"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <div className="h-24 w-24 rounded-2xl bg-accent/10 flex items-center justify-center mb-4">
+                        <FileText className="h-12 w-12" style={{ color: 'var(--accent-color, #C9A66B)' }} />
+                      </div>
+                      <p className="text-sm text-muted-foreground">Document Preview</p>
                     </div>
-                    <p className="text-sm text-muted-foreground">Document Preview</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Content */}
-              <div className="md:col-span-3 p-8 md:p-10">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400 text-sm font-medium mb-4">
-                  <Download className="h-4 w-4" />
-                  Free Download
+                  )}
                 </div>
 
-                <h2 className="text-3xl font-bold mb-3">{title}</h2>
+                {/* Content */}
+                <div className="md:col-span-3 p-8 md:p-10">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400 text-sm font-medium mb-4">
+                    <Download className="h-4 w-4" />
+                    Free Download
+                  </div>
 
-                {description && (
-                  <p className="text-muted-foreground mb-6 leading-relaxed">
-                    {description}
+                  <h2 className="text-3xl font-bold mb-3">{title}</h2>
+
+                  {description && (
+                    <p className="text-muted-foreground mb-6 leading-relaxed">
+                      {description}
+                    </p>
+                  )}
+
+                  <Button
+                    onClick={handleDownload}
+                    size="lg"
+                    className="w-full h-14 text-base font-semibold rounded-xl"
+                    style={{ backgroundColor: 'var(--accent-color, #C9A66B)' }}
+                    disabled={isPreview}
+                    aria-label={`Download ${title}`}
+                  >
+                    <Download className="h-5 w-5 mr-2" />
+                    {ctaLabel}
+                  </Button>
+
+                  <p className="text-xs text-muted-foreground text-center mt-4">
+                    {gate.enabled 
+                      ? '100% free • Quick form • Instant access'
+                      : '100% free • No signup required • Instant download'}
                   </p>
-                )}
-
-                <Button
-                  onClick={handleDownload}
-                  size="lg"
-                  className="w-full h-14 text-base font-semibold rounded-xl"
-                  style={{ backgroundColor: 'var(--accent-color, #C9A66B)' }}
-                  disabled={isPreview}
-                  aria-label={`Download ${title}`}
-                >
-                  <Download className="h-5 w-5 mr-2" />
-                  {ctaLabel}
-                </Button>
-
-                <p className="text-xs text-muted-foreground text-center mt-4">
-                  {gate.enabled 
-                    ? '100% free • Quick form • Instant access'
-                    : '100% free • No signup required • Instant download'}
-                </p>
+                </div>
               </div>
-            </div>
+            ) : (
+              /* Banner Layout */
+              <div className="relative">
+                {/* Background with thumbnail */}
+                {displayThumbnail && (
+                  <div className="absolute inset-0 overflow-hidden">
+                    <img
+                      src={displayThumbnail}
+                      alt={title}
+                      className="w-full h-full object-cover opacity-20"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/40 dark:from-black/80 dark:to-black/60" />
+                  </div>
+                )}
+                
+                <div className={`relative ${displayThumbnail ? 'bg-gradient-to-r from-accent/90 to-accent/70' : 'bg-gradient-to-r from-accent/20 to-accent/10'} p-8 md:p-12`}>
+                  <div className="flex flex-col md:flex-row items-center gap-8 max-w-5xl mx-auto">
+                    {/* Icon/Thumbnail */}
+                    <div className="flex-shrink-0">
+                      {!displayThumbnail && (
+                        <div className="h-32 w-32 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                          <FileText className="h-16 w-16 text-white" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 text-center md:text-left">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400 text-sm font-medium mb-3">
+                        <Download className="h-4 w-4" />
+                        Free Download
+                      </div>
+
+                      <h2 className={`text-3xl md:text-4xl font-bold mb-3 ${displayThumbnail ? 'text-white' : ''}`}>
+                        {title}
+                      </h2>
+
+                      {description && (
+                        <p className={`text-lg mb-6 leading-relaxed ${displayThumbnail ? 'text-white/90' : 'text-muted-foreground'}`}>
+                          {description}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* CTA */}
+                    <div className="flex-shrink-0">
+                      <Button
+                        onClick={handleDownload}
+                        size="lg"
+                        className="h-16 px-8 text-lg font-semibold rounded-xl shadow-xl hover:shadow-2xl transition-shadow"
+                        style={{ backgroundColor: 'var(--accent-color, #C9A66B)' }}
+                        disabled={isPreview}
+                        aria-label={`Download ${title}`}
+                      >
+                        <Download className="h-6 w-6 mr-2" />
+                        {ctaLabel}
+                      </Button>
+                      <p className={`text-xs text-center mt-3 ${displayThumbnail ? 'text-white/80' : 'text-muted-foreground'}`}>
+                        {gate.enabled 
+                          ? '100% free • Quick form'
+                          : '100% free • Instant download'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </motion.div>
         </div>
       </section>
