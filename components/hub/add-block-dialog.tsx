@@ -75,7 +75,7 @@ export function AddBlockDialog({ open, onOpenChange, onAdd }: AddBlockDialogProp
     
     // Premium blocks don't need configuration - add immediately
     const premiumBlocks = ['hero', 'about', 'properties', 'neighborhoods', 'testimonials', 
-                          'valuation', 'lead_magnet', 'contact', 'social_footer']
+                          'valuation', 'mortgage', 'lead_magnet', 'contact', 'social_footer']
     
     if (premiumBlocks.includes(type)) {
       onAdd({ type })
