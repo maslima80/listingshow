@@ -100,11 +100,17 @@ function getDefaultSettings(type: HubBlockType): HubBlockSettings | null {
       }
     case 'valuation':
       return {
-        headline: 'What\'s Your Home Worth?',
-        description: 'Get a free, no-obligation market analysis of your property.',
-        formFields: ['name', 'email', 'phone', 'address'],
-        ctaText: 'Get My Valuation',
-        successMessage: 'Thank you! I\'ll send your valuation within 24 hours.',
+        headline: "What's your home worth today?",
+        subline: 'Get a free personalized valuation — no cost, no obligation.',
+        ctaLabel: 'Get My Valuation',
+        successTitle: 'Thanks! We received your request.',
+        successSub: 'A local expert will review your details and contact you within 24 hours.',
+        collectPhone: true,
+        collectPreferredContact: true,
+        collectBestTime: true,
+        consentLabel: 'I agree to be contacted about my home valuation.',
+        showPrivacyNote: true,
+        anchorId: 'valuation',
       }
     case 'lead_magnet':
       return {

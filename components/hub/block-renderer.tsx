@@ -7,7 +7,7 @@ import { PropertiesBlockV2 } from './blocks/properties-block-v2'
 import { NeighborhoodsBlock } from './blocks/neighborhoods-block'
 import { TestimonialsBlock } from './blocks/testimonials-block'
 import { ContactBlock } from './blocks/contact-block'
-import { ValuationBlock } from './blocks/valuation-block'
+import { ValuationBlockV2 } from './blocks/valuation-block-v2'
 import { LeadMagnetBlock } from './blocks/lead-magnet-block'
 import { SocialFooterBlock } from './blocks/social-footer-block'
 
@@ -79,13 +79,11 @@ export function BlockRenderer({
 
     case 'valuation':
       return (
-        <div id="valuation">
-          <ValuationBlock
-            settings={settings}
-            teamId={teamId}
-            isPreview={isPreview}
-          />
-        </div>
+        <ValuationBlockV2
+          settings={settings}
+          teamId={teamId}
+          isPreview={isPreview}
+        />
       )
 
     case 'lead_magnet':

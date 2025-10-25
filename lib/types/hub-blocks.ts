@@ -146,12 +146,16 @@ export interface BlogBlockSettings {
 // Home Valuation Block Settings
 export interface ValuationBlockSettings {
   headline: string;
-  description: string;
-  formFields: ('name' | 'email' | 'phone' | 'address')[];
-  ctaText: string;
-  successMessage: string;
-  notificationEmail?: string;
-  backgroundColor?: string;
+  subline: string;
+  ctaLabel: string;
+  successTitle: string;
+  successSub: string;
+  collectPhone: boolean;
+  collectPreferredContact: boolean;
+  collectBestTime: boolean;
+  consentLabel: string;
+  showPrivacyNote: boolean;
+  anchorId: string;
 }
 
 // Mortgage Calculator Block Settings

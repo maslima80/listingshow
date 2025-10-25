@@ -12,6 +12,7 @@ import { PropertiesSettingsV2 } from './settings/properties-settings-v2'
 import { NeighborhoodsSettings } from './settings/neighborhoods-settings'
 import { TestimonialsSettings } from './settings/testimonials-settings'
 import { ContactSettings } from './settings/contact-settings'
+import { ValuationSettings } from './settings/valuation-settings'
 
 interface BlockSettingsPanelProps {
   block: HubBlock | null
@@ -96,6 +97,8 @@ export function BlockSettingsPanel({ block, open, onOpenChange, onSave }: BlockS
         return <TestimonialsSettings settings={settings} onChange={setSettings} />
       case 'contact':
         return <ContactSettings settings={settings} onChange={setSettings} />
+      case 'valuation':
+        return <ValuationSettings settings={settings} onChange={setSettings} />
       default:
         return <p className="text-sm text-muted-foreground">Settings for this block type coming soon...</p>
     }
